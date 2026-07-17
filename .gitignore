@@ -1,1 +1,5 @@
-/data
+# ignore contents of raw/ and processed/, but keep the folders themselves
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
