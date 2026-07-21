@@ -1,4 +1,6 @@
 .venv/
+.env
+venv/
 
 # ignore contents of raw/ and processed/, but keep the folders themselves
 data/raw/*
