@@ -1,5 +1,23 @@
 # jun26_bds_int_covid
 
+## Setup
+
+Python 3.10+ is recommended. From the project root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+On Windows, activate the environment with `.venv\Scripts\activate` instead of `source .venv/bin/activate`.
+
+To run the notebooks, start Jupyter and select the `.venv` kernel:
+
+```bash
+jupyter notebook
+```
+
 ## Dataset setup
 
 The raw dataset is not included in this repository. Files under `data/raw/` are listed in `.gitignore` so large image data stays out of Git.

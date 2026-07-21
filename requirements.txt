@@ -1,0 +1,7 @@
+ipykernel
+jupyter
+matplotlib
+numpy
+openpyxl
+pandas
+pillow
