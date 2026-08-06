@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "covid-xray"
+version = "0.1.0"
+description = "COVID-19 chest X-ray classification study: preprocessing, training, and evaluation steps."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "pandas",
+    "scikit-learn",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+covid-xray-preprocess = "covid_xray.preprocessing.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"

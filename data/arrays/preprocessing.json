@@ -1,0 +1,87 @@
+{
+  "array_dir": "/Users/meroo36/Desktop/Projects/jun26_bds_int_covid/data/arrays",
+  "augment_config": {
+    "brightness_contrast_probability": 0.4,
+    "brightness_range": 0.1,
+    "contrast_range": 0.1,
+    "flip_probability": 0.5,
+    "max_rotation_degrees": 15.0,
+    "rotation_extra_zoom": 0.02,
+    "rotation_probability": 0.5,
+    "shift_range": 0.05,
+    "translation_probability": 0.5,
+    "zoom_probability": 0.5,
+    "zoom_range": 0.08
+  },
+  "augment_splits": [
+    "train"
+  ],
+  "class_counts": {
+    "test": {
+      "COVID": 535,
+      "Lung_Opacity": 902,
+      "Normal": 1529,
+      "Viral Pneumonia": 200
+    },
+    "train": {
+      "COVID": 2495,
+      "Lung_Opacity": 4208,
+      "Normal": 7134,
+      "Viral Pneumonia": 937
+    },
+    "val": {
+      "COVID": 535,
+      "Lung_Opacity": 902,
+      "Normal": 1528,
+      "Viral Pneumonia": 201
+    }
+  },
+  "created_at": "2026-08-06T11:41:10+00:00",
+  "failed": {
+    "test": 0,
+    "train": 0,
+    "val": 0
+  },
+  "label_to_id": {
+    "COVID": 0,
+    "Lung_Opacity": 1,
+    "Normal": 2,
+    "Viral Pneumonia": 3
+  },
+  "preprocess_config": {
+    "apply_clahe": false,
+    "apply_lung_mask": false,
+    "augment": false,
+    "clahe_clip_limit": 2.0,
+    "clahe_tile_grid_size": [
+      8,
+      8
+    ],
+    "mask_threshold": 127,
+    "random_state": 42,
+    "target_size": [
+      224,
+      224
+    ]
+  },
+  "processed_dir": "/Users/meroo36/Desktop/Projects/jun26_bds_int_covid/data/processed",
+  "raw_dir": "/Users/meroo36/Desktop/Projects/jun26_bds_int_covid/data/raw",
+  "samples": {
+    "test": 3166,
+    "train": 14774,
+    "val": 3166
+  },
+  "split_config": {
+    "random_state": 42,
+    "stratify_column": "class",
+    "test_size": 0.15,
+    "val_size": 0.15
+  },
+  "versions": {
+    "numpy": "2.5.1",
+    "opencv-python": "5.0.0",
+    "pandas": "3.0.3",
+    "python": "3.12.5",
+    "scikit-learn": "1.9.0"
+  }
+}
