@@ -7,7 +7,7 @@ The work is organized as a pipeline of steps, each one a package under `src/covi
 | Step | Package | Status |
 | --- | --- | --- |
 | Preprocessing | `covid_xray.preprocessing` | Implemented |
-| Training | `covid_xray.training` | Planned |
+| Training | `covid_xray.training` | Baseline implemented |
 | Evaluation | `covid_xray.evaluation` | Planned |
 
 Every step reads its inputs from disk and writes versioned artifacts, so steps can be rerun independently.
@@ -87,6 +87,34 @@ print(format_report(result))
 ```
 
 Outputs go to `data/arrays/`: `X_{split}.npy`, `y_{split}.npy`, and `preprocessing.json`, which records the seed, split ratios, preprocessing and augmentation settings, per-class counts, and package versions so the training step knows exactly what it is consuming. Before saving, the step compares the fresh build against the arrays already on disk and reports any change in sample counts, labels, or pixel values.
+
+## Training step: raw-pixel baseline
+
+`covid_xray.training` implements the simplest possible baseline models, trained directly on raw pixels rather than on the engineered `data/arrays/` outputs, so later models have a floor to beat:
+
+- `config.py`: `BaselineConfig` (image size for downsampling, seed, logistic regression settings).
+- `data.py`: builds a manifest straight from `data/raw/` and drops known redundant files.
+- `features.py`: reads each raw image in grayscale, downsamples it (64x64 by default), flattens it, and scales pixel values to `[0, 1]`. No CLAHE, lung masking, or augmentation is applied, since the goal is a raw-pixel baseline.
+- `models.py`: a majority-class `DummyClassifier` (the trivial floor) and a `LogisticRegression` with `class_weight="balanced"` (a simple linear baseline that still accounts for class imbalance).
+- `evaluation.py`: per-class precision/recall/F1 (via `classification_report`), confusion matrices, and plots.
+- `pipeline.py`: `run_baseline`, which builds its own stratified 70/15/15 split (same ratios and seed as the preprocessing step) and fits/evaluates both models on train and test.
+
+Run it from the command line:
+
+```bash
+covid-xray-train-baseline --redundant-csv data/metadata/redundant_images.csv
+```
+
+Or from Python:
+
+```python
+from covid_xray.training import format_baseline_report, run_baseline
+
+result = run_baseline(redundant_csv="data/metadata/redundant_images.csv")
+print(format_baseline_report(result))
+```
+
+Outputs go to `models/baseline_dummy.joblib`, `models/baseline_logistic_regression.joblib`, and `reports/baseline/` (per-model metrics JSON and confusion matrix plots for train and test).
 
 ## Tests
 

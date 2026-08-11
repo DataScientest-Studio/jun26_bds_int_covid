@@ -12,6 +12,8 @@ dependencies = [
     "opencv-python",
     "pandas",
     "scikit-learn",
+    "matplotlib",
+    "joblib",
 ]
 
 [project.optional-dependencies]
@@ -19,6 +21,7 @@ dev = ["pytest"]
 
 [project.scripts]
 covid-xray-preprocess = "covid_xray.preprocessing.__main__:main"
+covid-xray-train-baseline = "covid_xray.training.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -14,3 +14,9 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/arrays/*
+!data/arrays/.gitkeep
+
+.matplotlib/
+.ipynb_checkpoints/
+.DS_Store
