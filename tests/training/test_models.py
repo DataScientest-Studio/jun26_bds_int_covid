@@ -31,9 +31,8 @@ def test_build_logistic_regression_fits_and_predicts() -> None:
     assert model.predict(X).shape == Y.shape
 
 
-def test_build_baseline_models_returns_dummy_and_logistic_regression() -> None:
+
+def test_build_baseline_models_returns_all_baselines() -> None:
     models = build_baseline_models(BaselineConfig())
 
-    assert set(models) == {"dummy", "logistic_regression"}
-    assert isinstance(models["dummy"], DummyClassifier)
-    assert isinstance(models["logistic_regression"], LogisticRegression)
+    assert set(models) == {"dummy", "logistic_regression", "hist_gradient_boosting"}

@@ -11,7 +11,7 @@ dependencies = [
     "numpy",
     "opencv-python",
     "pandas",
-    "scikit-learn",
+    "scikit-learn>=1.4",
     "matplotlib",
     "joblib",
 ]

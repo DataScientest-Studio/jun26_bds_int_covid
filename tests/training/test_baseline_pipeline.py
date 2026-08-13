@@ -12,6 +12,7 @@ from covid_xray.training.__main__ import main
 
 SMALL = BaselineConfig(image_size=(16, 16))
 
+MODEL_NAMES = ("dummy", "logistic_regression", "hist_gradient_boosting")
 
 def run_step(raw_dir: Path, tmp_path: Path, **overrides):
     defaults = dict(
@@ -28,10 +29,10 @@ def test_run_baseline_trains_and_evaluates_both_models(raw_dir: Path, tmp_path: 
     result = run_step(raw_dir, tmp_path)
 
     assert result.splits.total == IMAGES_PER_CLASS * len(CLASS_FOLDERS)
-    assert set(result.evaluations) == {"dummy", "logistic_regression"}
+    assert set(result.evaluations) == set(MODEL_NAMES)
     for split_evals in result.evaluations.values():
         assert set(split_evals) == {"train", "test"}
-    assert set(result.model_paths) == {"dummy", "logistic_regression"}
+    assert set(result.model_paths) == set(MODEL_NAMES)
     for path in result.model_paths.values():
         assert path.exists()
 

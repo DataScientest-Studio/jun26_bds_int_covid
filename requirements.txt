@@ -7,5 +7,5 @@ openpyxl
 pandas
 pillow
 pytest
-scikit-learn
 opencv-python
+scikit-learn>=1.4
