@@ -22,7 +22,7 @@ from .features import load_flat_features
 from .models import build_baseline_models
 
 BASELINE_REPORTS_DIR = REPORTS_DIR / "baseline"
-EVAL_SPLITS = ("train", "test")
+EVAL_SPLITS = ("train", "val", "test")
 
 
 def artifact_name(model_name: str, region: str) -> str:

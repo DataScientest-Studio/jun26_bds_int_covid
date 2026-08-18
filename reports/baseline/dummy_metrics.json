@@ -136,5 +136,74 @@
       }
     },
     "split": "train"
+  },
+  "val": {
+    "accuracy": 0.4826279216677195,
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        535,
+        0
+      ],
+      [
+        0,
+        0,
+        902,
+        0
+      ],
+      [
+        0,
+        0,
+        1528,
+        0
+      ],
+      [
+        0,
+        0,
+        201,
+        0
+      ]
+    ],
+    "report": {
+      "COVID": {
+        "f1-score": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 535.0
+      },
+      "Lung_Opacity": {
+        "f1-score": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 902.0
+      },
+      "Normal": {
+        "f1-score": 0.6510438858116745,
+        "precision": 0.4826279216677195,
+        "recall": 1.0,
+        "support": 1528.0
+      },
+      "Viral Pneumonia": {
+        "f1-score": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 201.0
+      },
+      "accuracy": 0.4826279216677195,
+      "macro avg": {
+        "f1-score": 0.16276097145291862,
+        "precision": 0.12065698041692988,
+        "recall": 0.25,
+        "support": 3166.0
+      },
+      "weighted avg": {
+        "f1-score": 0.3142119575237646,
+        "precision": 0.2329297107733024,
+        "recall": 0.4826279216677195,
+        "support": 3166.0
+      }
+    },
+    "split": "val"
   }
 }

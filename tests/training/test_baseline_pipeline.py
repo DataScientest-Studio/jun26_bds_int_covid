@@ -31,7 +31,7 @@ def test_run_baseline_trains_and_evaluates_both_models(raw_dir: Path, tmp_path: 
     assert result.splits.total == IMAGES_PER_CLASS * len(CLASS_FOLDERS)
     assert set(result.evaluations) == set(MODEL_NAMES)
     for split_evals in result.evaluations.values():
-        assert set(split_evals) == {"train", "test"}
+        assert set(split_evals) == {"train", "val", "test"}
     assert set(result.model_paths) == set(MODEL_NAMES)
     for path in result.model_paths.values():
         assert path.exists()
