@@ -14,6 +14,7 @@ dependencies = [
     "scikit-learn>=1.4",
     "matplotlib",
     "joblib",
+    "tensorflow>=2.16",
 ]
 
 [project.optional-dependencies]
@@ -22,6 +23,8 @@ dev = ["pytest"]
 [project.scripts]
 covid-xray-preprocess = "covid_xray.preprocessing.__main__:main"
 covid-xray-train-baseline = "covid_xray.training.__main__:main"
+covid-xray-train-transfer = "covid_xray.transfer_learning.__main__:main"
+covid-xray-gradcam = "covid_xray.transfer_learning.gradcam_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

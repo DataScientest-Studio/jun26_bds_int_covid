@@ -9,3 +9,4 @@ pillow
 pytest
 opencv-python
 scikit-learn>=1.4
+tensorflow>=2.16
