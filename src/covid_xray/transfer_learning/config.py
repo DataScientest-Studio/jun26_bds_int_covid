@@ -21,6 +21,8 @@ class TransferConfig:
     freeze_backbone: bool = True
     pretrained: bool = True
     augment: bool = False
+    mask_lungs: bool = False
+    mask_threshold: int = 127
     early_stopping_patience: int = 3
     random_state: int = RANDOM_STATE
 

@@ -8,7 +8,7 @@ The work is organized as a pipeline of steps, each one a package under `src/covi
 | --- | --- | --- |
 | Preprocessing | `covid_xray.preprocessing` | Implemented |
 | Training | `covid_xray.training` | Baseline implemented |
-| Transfer learning | `covid_xray.transfer_learning` | EfficientNetB0, frozen backbone |
+| Transfer learning | `covid_xray.transfer_learning` | EfficientNetB0, frozen backbone, with Grad-CAM interpretability |
 | Evaluation | `covid_xray.evaluation` | Planned |
 
 Every step reads its inputs from disk and writes versioned artifacts, so steps can be rerun independently.
@@ -145,6 +145,19 @@ print(format_transfer_report(result))
 ```
 
 Outputs go to `models/transfer_efficientnetb0.keras` and `reports/transfer_learning/` (metrics JSON and confusion matrix plots for train/val/test).
+
+### Interpretability: Grad-CAM and lung-focus analysis
+
+`covid_xray.transfer_learning.gradcam` answers a key trust question: does the model actually learn from the lungs, or is it partly relying on background/border cues? It generates Grad-CAM visualizations, quantifies what share of the model's attention falls inside the lung segmentation mask versus a chance baseline, and compares a normal model against one trained with the background forcibly masked out (`TransferConfig(mask_lungs=True)` / `--mask-lungs`).
+
+See **[`reports/transfer_learning/README.md`](reports/transfer_learning/README.md)** for the full write-up, including a finding that masking the background dropped COVID recall from 90% to 57% — direct evidence that a meaningful share of the model's COVID accuracy came from non-anatomical shortcuts in the dataset rather than lung pathology.
+
+```bash
+python -m covid_xray.transfer_learning.gradcam_cli \
+  --model-path models/transfer_efficientnetb0.keras \
+  --output reports/transfer_learning/gradcam.png \
+  --samples-per-class 2 --lung-focus-sample-size 300
+```
 
 Notes:
 

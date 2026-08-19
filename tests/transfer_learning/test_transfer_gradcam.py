@@ -17,6 +17,7 @@ from covid_xray.transfer_learning.gradcam import (
     gradcam_for_image,
     load_mask_for_gradcam,
     lung_attention_fraction,
+    mask_image_array,
     overlay_heatmap,
     resize_heatmap,
     save_correctness_lung_focus_report,
@@ -240,3 +241,51 @@ def test_save_correctness_lung_focus_report_writes_csv_and_png(
 
     assert csv_path.exists()
     assert png_path.exists()
+
+
+def test_mask_image_array_zeroes_pixels_outside_mask() -> None:
+    image = np.full((4, 4, 3), 200.0, dtype=np.float32)
+    mask = np.array(
+        [[0, 0, 0, 0], [0, 255, 255, 0], [0, 255, 255, 0], [0, 0, 0, 0]], dtype=np.uint8
+    )
+
+    masked = mask_image_array(image, mask)
+
+    assert np.all(masked[0, 0] == 0.0)
+    assert np.all(masked[1, 1] == 200.0)
+
+
+def test_gradcam_for_image_can_apply_mask_to_input() -> None:
+    model = build_transfer_model(SMALL)
+    backbone_grad_model, classifier_model = build_gradcam_models(model)
+    image = np.random.default_rng(0).uniform(0, 255, size=(64, 64, 3)).astype("float32")
+    mask = np.zeros((64, 64), dtype=np.uint8)
+    mask[16:48, 16:48] = 255
+
+    result = gradcam_for_image(
+        model,
+        image,
+        backbone_grad_model,
+        classifier_model,
+        mask=mask,
+        apply_mask_to_input=True,
+    )
+
+    assert result["lung_fraction"] is not None
+    assert result["image"].shape == image.shape
+
+
+def test_summarize_lung_focus_with_apply_mask_to_input_runs(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    model = build_transfer_model(SMALL)
+
+    summary = summarize_lung_focus(
+        model,
+        manifest_with_masks,
+        image_size=(64, 64),
+        sample_size=4,
+        apply_mask_to_input=True,
+    )
+
+    assert len(summary) == 4

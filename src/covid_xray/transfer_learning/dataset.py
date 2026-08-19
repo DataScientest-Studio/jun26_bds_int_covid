@@ -7,7 +7,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow import keras
 
-from ..config import CLASS_COLUMN, IMAGE_PATH_COLUMN, LABEL_TO_ID
+from ..config import CLASS_COLUMN, IMAGE_PATH_COLUMN, LABEL_TO_ID, MASK_PATH_COLUMN
 from ..preprocessing.manifest import Splits
 from .config import TransferConfig
 
@@ -23,6 +23,17 @@ def load_image(path: tf.Tensor, image_size: Tuple[int, int]) -> tf.Tensor:
     image = tf.io.decode_png(raw, channels=1)
     image = tf.image.resize(image, image_size, method="area")
     return tf.image.grayscale_to_rgb(image)
+
+
+def load_mask(path: tf.Tensor, image_size: Tuple[int, int]) -> tf.Tensor:
+    raw = tf.io.read_file(path)
+    mask = tf.io.decode_png(raw, channels=1)
+    return tf.image.resize(mask, image_size, method="nearest")
+
+
+def apply_lung_mask(image: tf.Tensor, mask: tf.Tensor, threshold: int) -> tf.Tensor:
+    binary_mask = tf.cast(mask > threshold, image.dtype)
+    return image * binary_mask
 
 
 def build_augmentation_pipeline() -> keras.Sequential:
@@ -43,16 +54,34 @@ def build_dataset(
     paths = frame[IMAGE_PATH_COLUMN].to_numpy()
     labels = encode_labels(frame)
 
-    dataset = tf.data.Dataset.from_tensor_slices((paths, labels))
+    if config.mask_lungs:
+        mask_paths = frame[MASK_PATH_COLUMN].to_numpy()
+        dataset = tf.data.Dataset.from_tensor_slices((paths, mask_paths, labels))
+    else:
+        dataset = tf.data.Dataset.from_tensor_slices((paths, labels))
+
     if shuffle and len(frame) > 0:
         dataset = dataset.shuffle(
             buffer_size=len(frame), seed=config.random_state, reshuffle_each_iteration=True
         )
 
-    dataset = dataset.map(
-        lambda path, label: (load_image(path, config.image_size), label),
-        num_parallel_calls=AUTOTUNE,
-    )
+    if config.mask_lungs:
+        dataset = dataset.map(
+            lambda path, mask_path, label: (
+                apply_lung_mask(
+                    load_image(path, config.image_size),
+                    load_mask(mask_path, config.image_size),
+                    config.mask_threshold,
+                ),
+                label,
+            ),
+            num_parallel_calls=AUTOTUNE,
+        )
+    else:
+        dataset = dataset.map(
+            lambda path, label: (load_image(path, config.image_size), label),
+            num_parallel_calls=AUTOTUNE,
+        )
     dataset = dataset.batch(config.batch_size)
 
     if augment:

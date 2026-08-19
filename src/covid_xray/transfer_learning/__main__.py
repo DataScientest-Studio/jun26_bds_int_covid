@@ -39,6 +39,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dense-units", type=int, default=TransferConfig().dense_units)
     parser.add_argument("--augment", action="store_true")
     parser.add_argument(
+        "--mask-lungs",
+        action="store_true",
+        help="Zero out everything outside the lung mask before feeding images to the model.",
+    )
+    parser.add_argument(
+        "--mask-threshold", type=int, default=TransferConfig().mask_threshold
+    )
+    parser.add_argument(
         "--pretrained",
         action=argparse.BooleanOptionalAction,
         default=TransferConfig().pretrained,
@@ -76,6 +84,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             dense_units=args.dense_units,
             pretrained=args.pretrained,
             augment=args.augment,
+            mask_lungs=args.mask_lungs,
+            mask_threshold=args.mask_threshold,
             random_state=args.seed,
         ),
         reports_dir=args.reports_dir,

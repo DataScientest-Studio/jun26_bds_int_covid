@@ -147,6 +147,13 @@ def draw_mask_contour(
     return outlined
 
 
+def mask_image_array(
+    image_array: np.ndarray, mask: np.ndarray, threshold: int = DEFAULT_MASK_THRESHOLD
+) -> np.ndarray:
+    is_lung = (mask > threshold).astype(image_array.dtype)
+    return image_array * is_lung[..., np.newaxis]
+
+
 def gradcam_for_image(
     model: keras.Model,
     image_array: np.ndarray,
@@ -154,8 +161,13 @@ def gradcam_for_image(
     classifier_model: keras.Model,
     mask: Optional[np.ndarray] = None,
     mask_threshold: int = DEFAULT_MASK_THRESHOLD,
+    apply_mask_to_input: bool = False,
 ) -> dict:
-    heatmap, pred_index = compute_gradcam_heatmap(image_array, backbone_grad_model, classifier_model)
+    model_input = image_array
+    if apply_mask_to_input and mask is not None:
+        model_input = mask_image_array(image_array, mask, mask_threshold)
+
+    heatmap, pred_index = compute_gradcam_heatmap(model_input, backbone_grad_model, classifier_model)
     heatmap_resized = resize_heatmap(heatmap, image_array.shape[:2])
     overlay = overlay_heatmap(image_array.astype("uint8"), heatmap_resized)
 
@@ -182,6 +194,7 @@ def save_gradcam_grid(
     last_conv_layer_name: Optional[str] = None,
     samples_per_class: int = 1,
     random_state: int = RANDOM_STATE,
+    apply_mask_to_input: bool = False,
 ) -> Path:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
@@ -212,7 +225,12 @@ def save_gradcam_grid(
         if has_masks and Path(row[MASK_PATH_COLUMN]).exists():
             mask = load_mask_for_gradcam(row[MASK_PATH_COLUMN], image_size)
         result = gradcam_for_image(
-            model, image_array, backbone_grad_model, classifier_model, mask=mask
+            model,
+            image_array,
+            backbone_grad_model,
+            classifier_model,
+            mask=mask,
+            apply_mask_to_input=apply_mask_to_input,
         )
 
         axes = [figure.add_subplot(n_rows, 3, row_index * 3 + i + 1) for i in range(3)]
@@ -242,12 +260,17 @@ def summarize_lung_focus(
     mask_threshold: int = DEFAULT_MASK_THRESHOLD,
     sample_size: Optional[int] = None,
     random_state: int = RANDOM_STATE,
+    apply_mask_to_input: bool = False,
 ) -> pd.DataFrame:
     """Compute, per image, how much Grad-CAM attention falls inside the lung mask.
 
     Returns one row per image with the true/predicted label, the observed lung
     attention fraction, and the mask's own pixel coverage (the "chance" fraction
     a spatially uninformative model would get by construction).
+
+    Set `apply_mask_to_input=True` when analyzing a model that was itself
+    trained on lung-masked images, so Grad-CAM sees the same input distribution
+    the model was trained on.
     """
     if MASK_PATH_COLUMN not in frame.columns:
         raise ValueError(f"frame needs a {MASK_PATH_COLUMN!r} column to compute lung focus")
@@ -262,9 +285,12 @@ def summarize_lung_focus(
     records = []
     for _, row in frame.iterrows():
         image_array = load_image_for_gradcam(row[IMAGE_PATH_COLUMN], image_size)
-        heatmap, pred_index = compute_gradcam_heatmap(image_array, backbone_grad_model, classifier_model)
-        heatmap_resized = resize_heatmap(heatmap, image_size)
         mask = load_mask_for_gradcam(row[MASK_PATH_COLUMN], image_size)
+        model_input = image_array
+        if apply_mask_to_input:
+            model_input = mask_image_array(image_array, mask, mask_threshold)
+        heatmap, pred_index = compute_gradcam_heatmap(model_input, backbone_grad_model, classifier_model)
+        heatmap_resized = resize_heatmap(heatmap, image_size)
         is_lung = mask > mask_threshold
 
         records.append(

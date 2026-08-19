@@ -42,6 +42,15 @@ def build_parser() -> argparse.ArgumentParser:
         default=200,
         help="Number of images to sample per run when computing the lung-focus report.",
     )
+    parser.add_argument(
+        "--apply-mask-to-input",
+        action="store_true",
+        help=(
+            "Zero out the background before feeding images to the model, matching a "
+            "model trained with --mask-lungs. Without this flag Grad-CAM sees the "
+            "full, unmasked image."
+        ),
+    )
     return parser
 
 
@@ -62,6 +71,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         backbone_layer_name=args.backbone_layer,
         samples_per_class=args.samples_per_class,
         random_state=args.seed,
+        apply_mask_to_input=args.apply_mask_to_input,
     )
     print(f"Saved Grad-CAM grid to {output_path}")
 
@@ -73,6 +83,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             backbone_layer_name=args.backbone_layer,
             sample_size=args.lung_focus_sample_size,
             random_state=args.seed,
+            apply_mask_to_input=args.apply_mask_to_input,
         )
         csv_path, png_path = save_lung_focus_report(
             summary, args.output.parent, args.model_path.stem
