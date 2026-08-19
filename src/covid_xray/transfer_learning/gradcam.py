@@ -292,12 +292,55 @@ def aggregate_lung_focus(summary: pd.DataFrame) -> pd.DataFrame:
     return per_class.reindex([name for name in CLASS_NAMES if name in per_class.index])
 
 
-def save_lung_focus_report(
-    summary: pd.DataFrame, output_dir: Path | str, model_name: str
-) -> Tuple[Path, Path]:
+def aggregate_lung_focus_by_correctness(summary: pd.DataFrame) -> pd.DataFrame:
+    """Compare Grad-CAM lung focus between correct and misclassified predictions.
+
+    If the model attends to the lungs noticeably less on the images it gets
+    wrong, that is evidence its errors coincide with it leaning on background
+    or border cues rather than the pathology itself.
+    """
+    frame = summary.copy()
+    frame["prediction"] = np.where(
+        frame["true_label"] == frame["predicted_label"], "correct", "misclassified"
+    )
+    per_group = frame.groupby("prediction").agg(
+        mean_lung_fraction=("lung_fraction", "mean"),
+        std_lung_fraction=("lung_fraction", "std"),
+        mean_mask_coverage=("mask_coverage", "mean"),
+        n_images=("lung_fraction", "count"),
+    )
+    per_group["lung_focus_vs_chance"] = (
+        per_group["mean_lung_fraction"] - per_group["mean_mask_coverage"]
+    )
+    return per_group.reindex(["correct", "misclassified"]).dropna(how="all")
+
+
+def _plot_lung_focus_bars(per_group: pd.DataFrame, title: str, output_path: Path) -> Path:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
 
+    figure = Figure(figsize=(8, 4.5))
+    FigureCanvasAgg(figure)
+    axis = figure.add_subplot(111)
+
+    positions = np.arange(len(per_group))
+    axis.bar(positions - 0.2, per_group["mean_lung_fraction"], width=0.4, label="Grad-CAM in lungs")
+    axis.bar(positions + 0.2, per_group["mean_mask_coverage"], width=0.4, label="lung area (chance)")
+    axis.set_xticks(positions)
+    axis.set_xticklabels(per_group.index, rotation=45, ha="right")
+    axis.set_ylabel("Fraction")
+    axis.set_ylim(0, 1)
+    axis.set_title(title, fontsize=10)
+    axis.legend()
+
+    figure.tight_layout()
+    figure.savefig(output_path, dpi=150)
+    return output_path
+
+
+def save_lung_focus_report(
+    summary: pd.DataFrame, output_dir: Path | str, model_name: str
+) -> Tuple[Path, Path]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     per_class = aggregate_lung_focus(summary)
@@ -305,22 +348,27 @@ def save_lung_focus_report(
     csv_path = output_dir / f"{model_name}_lung_focus.csv"
     per_class.to_csv(csv_path)
 
-    figure = Figure(figsize=(7, 4))
-    FigureCanvasAgg(figure)
-    axis = figure.add_subplot(111)
-
-    positions = np.arange(len(per_class))
-    axis.bar(positions - 0.2, per_class["mean_lung_fraction"], width=0.4, label="Grad-CAM in lungs")
-    axis.bar(positions + 0.2, per_class["mean_mask_coverage"], width=0.4, label="lung area (chance)")
-    axis.set_xticks(positions)
-    axis.set_xticklabels(per_class.index, rotation=45, ha="right")
-    axis.set_ylabel("Fraction")
-    axis.set_ylim(0, 1)
-    axis.set_title(f"{model_name}: Grad-CAM attention inside lungs vs. chance")
-    axis.legend()
-
-    figure.tight_layout()
     png_path = output_dir / f"{model_name}_lung_focus.png"
-    figure.savefig(png_path, dpi=150)
+    _plot_lung_focus_bars(
+        per_class, f"{model_name}\nGrad-CAM attention inside lungs vs. chance", png_path
+    )
+
+    return csv_path, png_path
+
+
+def save_correctness_lung_focus_report(
+    summary: pd.DataFrame, output_dir: Path | str, model_name: str
+) -> Tuple[Path, Path]:
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    per_group = aggregate_lung_focus_by_correctness(summary)
+
+    csv_path = output_dir / f"{model_name}_lung_focus_by_correctness.csv"
+    per_group.to_csv(csv_path)
+
+    png_path = output_dir / f"{model_name}_lung_focus_by_correctness.png"
+    _plot_lung_focus_bars(
+        per_group, f"{model_name}\nGrad-CAM lung focus: correct vs misclassified", png_path
+    )
 
     return csv_path, png_path

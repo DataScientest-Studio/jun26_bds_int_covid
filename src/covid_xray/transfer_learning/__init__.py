@@ -4,11 +4,13 @@ from .config import TransferConfig
 from .dataset import build_datasets
 from .gradcam import (
     aggregate_lung_focus,
+    aggregate_lung_focus_by_correctness,
     build_gradcam_models,
     compute_gradcam_heatmap,
     gradcam_for_image,
     lung_attention_fraction,
     overlay_heatmap,
+    save_correctness_lung_focus_report,
     save_gradcam_grid,
     save_lung_focus_report,
     summarize_lung_focus,
@@ -28,7 +30,9 @@ __all__ = [
     "lung_attention_fraction",
     "summarize_lung_focus",
     "aggregate_lung_focus",
+    "aggregate_lung_focus_by_correctness",
     "save_lung_focus_report",
+    "save_correctness_lung_focus_report",
     "TransferResult",
     "format_transfer_report",
     "run_transfer_learning",

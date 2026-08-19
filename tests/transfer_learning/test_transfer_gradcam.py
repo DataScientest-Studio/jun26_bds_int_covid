@@ -9,6 +9,7 @@ import pytest
 from covid_xray.transfer_learning import TransferConfig, build_transfer_model
 from covid_xray.transfer_learning.gradcam import (
     aggregate_lung_focus,
+    aggregate_lung_focus_by_correctness,
     build_gradcam_models,
     compute_gradcam_heatmap,
     draw_mask_contour,
@@ -18,6 +19,7 @@ from covid_xray.transfer_learning.gradcam import (
     lung_attention_fraction,
     overlay_heatmap,
     resize_heatmap,
+    save_correctness_lung_focus_report,
     save_gradcam_grid,
     save_lung_focus_report,
     summarize_lung_focus,
@@ -189,6 +191,52 @@ def test_save_lung_focus_report_writes_csv_and_png(
     summary = summarize_lung_focus(model, manifest_with_masks, image_size=(64, 64))
 
     csv_path, png_path = save_lung_focus_report(summary, tmp_path, "test_model")
+
+    assert csv_path.exists()
+    assert png_path.exists()
+
+
+def test_aggregate_lung_focus_by_correctness_splits_correct_and_misclassified() -> None:
+    summary = pd.DataFrame(
+        {
+            "true_label": ["COVID", "COVID", "Normal", "Normal"],
+            "predicted_label": ["COVID", "Normal", "Normal", "COVID"],
+            "lung_fraction": [0.5, 0.2, 0.6, 0.1],
+            "mask_coverage": [0.25, 0.25, 0.25, 0.25],
+        }
+    )
+
+    per_group = aggregate_lung_focus_by_correctness(summary)
+
+    assert list(per_group.index) == ["correct", "misclassified"]
+    assert per_group.loc["correct", "mean_lung_fraction"] == pytest.approx(0.55)
+    assert per_group.loc["misclassified", "mean_lung_fraction"] == pytest.approx(0.15)
+    assert per_group.loc["correct", "n_images"] == 2
+    assert per_group.loc["misclassified", "n_images"] == 2
+
+
+def test_aggregate_lung_focus_by_correctness_handles_all_correct() -> None:
+    summary = pd.DataFrame(
+        {
+            "true_label": ["COVID", "Normal"],
+            "predicted_label": ["COVID", "Normal"],
+            "lung_fraction": [0.5, 0.6],
+            "mask_coverage": [0.25, 0.25],
+        }
+    )
+
+    per_group = aggregate_lung_focus_by_correctness(summary)
+
+    assert list(per_group.index) == ["correct"]
+
+
+def test_save_correctness_lung_focus_report_writes_csv_and_png(
+    manifest_with_masks: pd.DataFrame, tmp_path: Path
+) -> None:
+    model = build_transfer_model(SMALL)
+    summary = summarize_lung_focus(model, manifest_with_masks, image_size=(64, 64))
+
+    csv_path, png_path = save_correctness_lung_focus_report(summary, tmp_path, "test_model")
 
     assert csv_path.exists()
     assert png_path.exists()

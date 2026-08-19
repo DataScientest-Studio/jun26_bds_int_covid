@@ -11,6 +11,8 @@ from .config import TransferConfig
 from .gradcam import (
     DEFAULT_BACKBONE_LAYER,
     aggregate_lung_focus,
+    aggregate_lung_focus_by_correctness,
+    save_correctness_lung_focus_report,
     save_gradcam_grid,
     save_lung_focus_report,
     summarize_lung_focus,
@@ -77,6 +79,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(f"Saved lung-focus report to {csv_path} and {png_path}")
         print(aggregate_lung_focus(summary).round(3).to_string())
+
+        correctness_csv_path, correctness_png_path = save_correctness_lung_focus_report(
+            summary, args.output.parent, args.model_path.stem
+        )
+        print(f"Saved correctness lung-focus report to {correctness_csv_path} and {correctness_png_path}")
+        print(aggregate_lung_focus_by_correctness(summary).round(3).to_string())
 
     return 0
 
