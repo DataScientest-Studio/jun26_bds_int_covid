@@ -21,6 +21,7 @@ class TransferConfig:
     freeze_backbone: bool = True
     pretrained: bool = True
     augment: bool = False
+    use_class_weight: bool = True
     mask_lungs: bool = False
     mask_threshold: int = 127
     early_stopping_patience: int = 3

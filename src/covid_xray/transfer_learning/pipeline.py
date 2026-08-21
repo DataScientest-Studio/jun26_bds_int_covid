@@ -16,7 +16,7 @@ from ..training.evaluation import (
     save_metrics,
 )
 from .config import TransferConfig
-from .dataset import build_datasets
+from .dataset import build_datasets, compute_balanced_class_weights
 from .evaluation import evaluate_dataset
 from .model import build_transfer_model
 
@@ -54,6 +54,10 @@ def run_transfer_learning(
     tf.keras.utils.set_random_seed(config.random_state)
     model = build_transfer_model(config)
 
+    class_weight = (
+        compute_balanced_class_weights(splits.train) if config.use_class_weight else None
+    )
+
     callbacks = [
         tf.keras.callbacks.EarlyStopping(
             monitor="val_loss",
@@ -66,6 +70,7 @@ def run_transfer_learning(
         validation_data=datasets["val"],
         epochs=config.epochs,
         callbacks=callbacks,
+        class_weight=class_weight,
         shuffle=False,
         verbose=verbose,
     )

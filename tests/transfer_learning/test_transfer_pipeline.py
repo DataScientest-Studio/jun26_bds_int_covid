@@ -43,6 +43,20 @@ def test_run_transfer_learning_trains_and_evaluates(
     assert (tmp_path / "reports" / "transfer_learning" / "test_transfer_metrics.json").exists()
 
 
+def test_run_transfer_learning_with_class_weight_trains_and_evaluates(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    config = TransferConfig(
+        image_size=(64, 64), pretrained=False, batch_size=4, epochs=1, dense_units=8,
+        use_class_weight=True,
+    )
+    result = run_step(processed_dir, tmp_path, config=config)
+
+    assert set(result.evaluations) == {"train", "val", "test"}
+    assert result.model_path is not None
+    assert result.model_path.exists()
+
+
 def test_run_transfer_learning_dry_run_writes_nothing(
     processed_dir: Path, tmp_path: Path
 ) -> None:
@@ -89,6 +103,16 @@ def test_cli_runs_transfer_learning_end_to_end(
     processed_dir: Path, tmp_path: Path, capsys: pytest.CaptureFixture
 ) -> None:
     exit_code = main(cli_args(processed_dir, tmp_path) + ["--seed", "7"])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Saved model" in output
+
+
+def test_cli_class_weight_flag_runs_end_to_end(
+    processed_dir: Path, tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    exit_code = main(cli_args(processed_dir, tmp_path) + ["--class-weight"])
 
     assert exit_code == 0
     output = capsys.readouterr().out

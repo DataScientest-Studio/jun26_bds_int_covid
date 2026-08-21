@@ -39,6 +39,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dense-units", type=int, default=TransferConfig().dense_units)
     parser.add_argument("--augment", action="store_true")
     parser.add_argument(
+        "--class-weight",
+        action="store_true",
+        dest="use_class_weight",
+        help=(
+            "Weight the loss inversely to class frequency during training, to "
+            "counter the dataset's class imbalance (Normal/Lung_Opacity outnumber "
+            "COVID/Viral Pneumonia)."
+        ),
+    )
+    parser.add_argument(
         "--mask-lungs",
         action="store_true",
         help="Zero out everything outside the lung mask before feeding images to the model.",
@@ -84,6 +94,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             dense_units=args.dense_units,
             pretrained=args.pretrained,
             augment=args.augment,
+            use_class_weight=args.use_class_weight,
             mask_lungs=args.mask_lungs,
             mask_threshold=args.mask_threshold,
             random_state=args.seed,

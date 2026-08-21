@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from sklearn.utils.class_weight import compute_class_weight
 from tensorflow import keras
 
 from ..config import CLASS_COLUMN, IMAGE_PATH_COLUMN, LABEL_TO_ID, MASK_PATH_COLUMN
@@ -16,6 +17,15 @@ AUTOTUNE = tf.data.AUTOTUNE
 
 def encode_labels(frame: pd.DataFrame) -> np.ndarray:
     return frame[CLASS_COLUMN].map(LABEL_TO_ID).to_numpy(dtype=np.int64)
+
+
+def compute_balanced_class_weights(frame: pd.DataFrame) -> Dict[int, float]:
+    labels = encode_labels(frame)
+    class_ids = np.unique(labels)
+    weights = compute_class_weight(
+        class_weight="balanced", classes=class_ids, y=labels
+    )
+    return dict(zip(class_ids.tolist(), weights.tolist()))
 
 
 def load_image(path: tf.Tensor, image_size: Tuple[int, int]) -> tf.Tensor:
