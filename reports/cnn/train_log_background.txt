@@ -1,0 +1,97 @@
+2026-08-20 13:40:13.239829: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
+2026-08-20 13:40:13.239859: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
+2026-08-20 13:40:13.239864: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
+2026-08-20 13:40:13.239879: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-08-20 13:40:13.239891: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+Epoch 1/40
+2026-08-20 13:40:14.284154: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
+924/924 - 204s - 221ms/step - accuracy: 0.6800 - loss: 0.6859 - val_accuracy: 0.4466 - val_loss: 1.3209 - learning_rate: 0.0010
+Epoch 2/40
+924/924 - 205s - 222ms/step - accuracy: 0.7839 - loss: 0.4621 - val_accuracy: 0.7732 - val_loss: 0.6125 - learning_rate: 0.0010
+Epoch 3/40
+924/924 - 212s - 230ms/step - accuracy: 0.8227 - loss: 0.3793 - val_accuracy: 0.4232 - val_loss: 4.6437 - learning_rate: 0.0010
+Epoch 4/40
+924/924 - 236s - 255ms/step - accuracy: 0.8424 - loss: 0.3302 - val_accuracy: 0.7792 - val_loss: 0.6240 - learning_rate: 0.0010
+Epoch 5/40
+924/924 - 272s - 295ms/step - accuracy: 0.8607 - loss: 0.2972 - val_accuracy: 0.4681 - val_loss: 1.6215 - learning_rate: 0.0010
+Epoch 6/40
+924/924 - 373s - 403ms/step - accuracy: 0.8701 - loss: 0.2706 - val_accuracy: 0.6510 - val_loss: 1.0216 - learning_rate: 0.0010
+Epoch 7/40
+924/924 - 320s - 346ms/step - accuracy: 0.8943 - loss: 0.2074 - val_accuracy: 0.8809 - val_loss: 0.3315 - learning_rate: 5.0000e-04
+Epoch 8/40
+924/924 - 298s - 323ms/step - accuracy: 0.9061 - loss: 0.1882 - val_accuracy: 0.8133 - val_loss: 0.5211 - learning_rate: 5.0000e-04
+Epoch 9/40
+924/924 - 303s - 328ms/step - accuracy: 0.9064 - loss: 0.1811 - val_accuracy: 0.8996 - val_loss: 0.2900 - learning_rate: 5.0000e-04
+Epoch 10/40
+924/924 - 316s - 342ms/step - accuracy: 0.9121 - loss: 0.1613 - val_accuracy: 0.7110 - val_loss: 1.1062 - learning_rate: 5.0000e-04
+Epoch 11/40
+924/924 - 351s - 380ms/step - accuracy: 0.9159 - loss: 0.1619 - val_accuracy: 0.8812 - val_loss: 0.3244 - learning_rate: 5.0000e-04
+Epoch 12/40
+924/924 - 363s - 393ms/step - accuracy: 0.9195 - loss: 0.1508 - val_accuracy: 0.8951 - val_loss: 0.2925 - learning_rate: 5.0000e-04
+Epoch 13/40
+924/924 - 191s - 207ms/step - accuracy: 0.9247 - loss: 0.1392 - val_accuracy: 0.9116 - val_loss: 0.2482 - learning_rate: 5.0000e-04
+Epoch 14/40
+924/924 - 238s - 257ms/step - accuracy: 0.9285 - loss: 0.1331 - val_accuracy: 0.8162 - val_loss: 0.5505 - learning_rate: 5.0000e-04
+Epoch 15/40
+924/924 - 247s - 267ms/step - accuracy: 0.9323 - loss: 0.1229 - val_accuracy: 0.6851 - val_loss: 0.9980 - learning_rate: 5.0000e-04
+Epoch 16/40
+924/924 - 318s - 344ms/step - accuracy: 0.9364 - loss: 0.1206 - val_accuracy: 0.9040 - val_loss: 0.2867 - learning_rate: 5.0000e-04
+Epoch 17/40
+924/924 - 281s - 304ms/step - accuracy: 0.9366 - loss: 0.1121 - val_accuracy: 0.8970 - val_loss: 0.3235 - learning_rate: 5.0000e-04
+Epoch 18/40
+924/924 - 294s - 318ms/step - accuracy: 0.9548 - loss: 0.0810 - val_accuracy: 0.9261 - val_loss: 0.2447 - learning_rate: 2.5000e-04
+Epoch 19/40
+924/924 - 285s - 308ms/step - accuracy: 0.9608 - loss: 0.0717 - val_accuracy: 0.8955 - val_loss: 0.3134 - learning_rate: 2.5000e-04
+Epoch 20/40
+924/924 - 233s - 252ms/step - accuracy: 0.9657 - loss: 0.0636 - val_accuracy: 0.9138 - val_loss: 0.3011 - learning_rate: 2.5000e-04
+Epoch 21/40
+924/924 - 211s - 229ms/step - accuracy: 0.9693 - loss: 0.0585 - val_accuracy: 0.8661 - val_loss: 0.5520 - learning_rate: 2.5000e-04
+Epoch 22/40
+924/924 - 207s - 224ms/step - accuracy: 0.9757 - loss: 0.0450 - val_accuracy: 0.8629 - val_loss: 0.4757 - learning_rate: 2.5000e-04
+Epoch 23/40
+924/924 - 210s - 227ms/step - accuracy: 0.9844 - loss: 0.0310 - val_accuracy: 0.9144 - val_loss: 0.3149 - learning_rate: 1.2500e-04
+Epoch 24/40
+924/924 - 225s - 243ms/step - accuracy: 0.9868 - loss: 0.0266 - val_accuracy: 0.8443 - val_loss: 0.5430 - learning_rate: 1.2500e-04
+Epoch 25/40
+924/924 - 213s - 230ms/step - accuracy: 0.9906 - loss: 0.0233 - val_accuracy: 0.8165 - val_loss: 0.6580 - learning_rate: 1.2500e-04
+Epoch 26/40
+924/924 - 3563s - 4s/step - accuracy: 0.9890 - loss: 0.0229 - val_accuracy: 0.9138 - val_loss: 0.3762 - learning_rate: 1.2500e-04
+2026-08-20 16:30:43.375161: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-20 16:30:58.419056: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-20 16:31:11.515651: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+                    train       val      test
+class                                        
+COVID            0.168878  0.168983  0.168983
+Lung_Opacity     0.284825  0.284902  0.284902
+Normal           0.482875  0.482628  0.482944
+Viral Pneumonia  0.063422  0.063487  0.063171
+
+Epochs run: 26
+
+Class weights: 0=1.480, 1=0.878, 2=0.518, 3=3.942
+
+cnn_scratch_background [train]
+  Accuracy: 0.9784
+  COVID: precision=1.000 recall=1.000 f1=1.000 support=2495
+  Lung_Opacity: precision=0.951 recall=0.976 f1=0.963 support=4208
+  Normal: precision=0.985 recall=0.970 f1=0.977 support=7134
+  Viral Pneumonia: precision=0.998 recall=1.000 f1=0.999 support=937
+  macro avg: precision=0.983 recall=0.986 f1=0.985
+
+cnn_scratch_background [val]
+  Accuracy: 0.9261
+  COVID: precision=0.977 recall=0.953 f1=0.965 support=535
+  Lung_Opacity: precision=0.890 recall=0.885 f1=0.887 support=902
+  Normal: precision=0.923 recall=0.937 f1=0.930 support=1528
+  Viral Pneumonia: precision=0.985 recall=0.955 f1=0.970 support=201
+  macro avg: precision=0.943 recall=0.933 f1=0.938
+
+cnn_scratch_background [test]
+  Accuracy: 0.9201
+  COVID: precision=0.981 recall=0.955 f1=0.968 support=535
+  Lung_Opacity: precision=0.883 recall=0.877 f1=0.880 support=902
+  Normal: precision=0.914 recall=0.928 f1=0.921 support=1529
+  Viral Pneumonia: precision=0.975 recall=0.960 f1=0.967 support=200
+  macro avg: precision=0.938 recall=0.930 f1=0.934
+
+Saved model: /Users/berfinaktas/Projects/covid_project_folders/jun26_bds_int_covid/models/cnn_scratch_background.keras

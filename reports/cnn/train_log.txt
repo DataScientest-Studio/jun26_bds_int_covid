@@ -1,0 +1,89 @@
+2026-08-21 11:01:45.809020: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
+2026-08-21 11:01:45.809302: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
+2026-08-21 11:01:45.809314: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
+2026-08-21 11:01:45.809611: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-08-21 11:01:45.809623: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+Epoch 1/40
+2026-08-21 11:01:46.965831: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
+924/924 - 148s - 160ms/step - accuracy: 0.6761 - loss: 0.6920 - val_accuracy: 0.7160 - val_loss: 0.9770 - learning_rate: 0.0010
+Epoch 2/40
+924/924 - 144s - 156ms/step - accuracy: 0.8089 - loss: 0.4135 - val_accuracy: 0.8364 - val_loss: 0.4858 - learning_rate: 0.0010
+Epoch 3/40
+924/924 - 147s - 159ms/step - accuracy: 0.8459 - loss: 0.3286 - val_accuracy: 0.5717 - val_loss: 0.9502 - learning_rate: 0.0010
+Epoch 4/40
+924/924 - 148s - 160ms/step - accuracy: 0.8687 - loss: 0.2755 - val_accuracy: 0.6788 - val_loss: 1.0872 - learning_rate: 0.0010
+Epoch 5/40
+924/924 - 161s - 174ms/step - accuracy: 0.8859 - loss: 0.2447 - val_accuracy: 0.5164 - val_loss: 1.4907 - learning_rate: 0.0010
+Epoch 6/40
+924/924 - 175s - 190ms/step - accuracy: 0.8966 - loss: 0.2199 - val_accuracy: 0.5022 - val_loss: 1.8264 - learning_rate: 0.0010
+Epoch 7/40
+924/924 - 168s - 182ms/step - accuracy: 0.9212 - loss: 0.1615 - val_accuracy: 0.9248 - val_loss: 0.2138 - learning_rate: 5.0000e-04
+Epoch 8/40
+924/924 - 181s - 196ms/step - accuracy: 0.9274 - loss: 0.1436 - val_accuracy: 0.7814 - val_loss: 0.6373 - learning_rate: 5.0000e-04
+Epoch 9/40
+924/924 - 197s - 213ms/step - accuracy: 0.9296 - loss: 0.1406 - val_accuracy: 0.9346 - val_loss: 0.1902 - learning_rate: 5.0000e-04
+Epoch 10/40
+924/924 - 201s - 217ms/step - accuracy: 0.9359 - loss: 0.1249 - val_accuracy: 0.9147 - val_loss: 0.2392 - learning_rate: 5.0000e-04
+Epoch 11/40
+924/924 - 196s - 213ms/step - accuracy: 0.9424 - loss: 0.1148 - val_accuracy: 0.9330 - val_loss: 0.2086 - learning_rate: 5.0000e-04
+Epoch 12/40
+924/924 - 212s - 230ms/step - accuracy: 0.9437 - loss: 0.1112 - val_accuracy: 0.9296 - val_loss: 0.2013 - learning_rate: 5.0000e-04
+Epoch 13/40
+924/924 - 227s - 245ms/step - accuracy: 0.9465 - loss: 0.1035 - val_accuracy: 0.9150 - val_loss: 0.2348 - learning_rate: 5.0000e-04
+Epoch 14/40
+924/924 - 237s - 256ms/step - accuracy: 0.9615 - loss: 0.0711 - val_accuracy: 0.9356 - val_loss: 0.1861 - learning_rate: 2.5000e-04
+Epoch 15/40
+924/924 - 221s - 239ms/step - accuracy: 0.9675 - loss: 0.0642 - val_accuracy: 0.9277 - val_loss: 0.2468 - learning_rate: 2.5000e-04
+Epoch 16/40
+924/924 - 216s - 233ms/step - accuracy: 0.9722 - loss: 0.0537 - val_accuracy: 0.8481 - val_loss: 0.4497 - learning_rate: 2.5000e-04
+Epoch 17/40
+924/924 - 223s - 241ms/step - accuracy: 0.9762 - loss: 0.0458 - val_accuracy: 0.9299 - val_loss: 0.2108 - learning_rate: 2.5000e-04
+Epoch 18/40
+924/924 - 167s - 181ms/step - accuracy: 0.9800 - loss: 0.0405 - val_accuracy: 0.9308 - val_loss: 0.2264 - learning_rate: 2.5000e-04
+Epoch 19/40
+924/924 - 331s - 358ms/step - accuracy: 0.9870 - loss: 0.0266 - val_accuracy: 0.9365 - val_loss: 0.2119 - learning_rate: 1.2500e-04
+Epoch 20/40
+924/924 - 155s - 168ms/step - accuracy: 0.9905 - loss: 0.0228 - val_accuracy: 0.9274 - val_loss: 0.2386 - learning_rate: 1.2500e-04
+Epoch 21/40
+924/924 - 214s - 232ms/step - accuracy: 0.9914 - loss: 0.0200 - val_accuracy: 0.9337 - val_loss: 0.2337 - learning_rate: 1.2500e-04
+Epoch 22/40
+924/924 - 266s - 287ms/step - accuracy: 0.9924 - loss: 0.0174 - val_accuracy: 0.9138 - val_loss: 0.2867 - learning_rate: 1.2500e-04
+2026-08-21 12:15:28.512261: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-21 12:15:47.580715: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-21 12:16:08.910100: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+                    train       val      test
+class                                        
+COVID            0.168878  0.168983  0.168983
+Lung_Opacity     0.284825  0.284902  0.284902
+Normal           0.482875  0.482628  0.482944
+Viral Pneumonia  0.063422  0.063487  0.063171
+
+Epochs run: 22
+
+Class weights: 0=1.480, 1=0.878, 2=0.518, 3=3.942
+
+cnn_scratch [train]
+  Accuracy: 0.9807
+  COVID: precision=0.995 recall=1.000 f1=0.998 support=2495
+  Lung_Opacity: precision=0.955 recall=0.981 f1=0.968 support=4208
+  Normal: precision=0.989 recall=0.971 f1=0.980 support=7134
+  Viral Pneumonia: precision=0.998 recall=1.000 f1=0.999 support=937
+  macro avg: precision=0.984 recall=0.988 f1=0.986
+
+cnn_scratch [val]
+  Accuracy: 0.9356
+  COVID: precision=0.941 recall=0.985 f1=0.963 support=535
+  Lung_Opacity: precision=0.902 recall=0.908 f1=0.905 support=902
+  Normal: precision=0.950 recall=0.930 f1=0.940 support=1528
+  Viral Pneumonia: precision=0.965 recall=0.970 f1=0.968 support=201
+  macro avg: precision=0.940 recall=0.948 f1=0.944
+
+cnn_scratch [test]
+  Accuracy: 0.9378
+  COVID: precision=0.955 recall=0.987 f1=0.971 support=535
+  Lung_Opacity: precision=0.908 recall=0.906 f1=0.907 support=902
+  Normal: precision=0.947 recall=0.933 f1=0.940 support=1529
+  Viral Pneumonia: precision=0.956 recall=0.985 f1=0.970 support=200
+  macro avg: precision=0.941 recall=0.953 f1=0.947
+
+Saved model: /Users/berfinaktas/Projects/covid_project_folders/jun26_bds_int_covid/models/cnn_scratch.keras
