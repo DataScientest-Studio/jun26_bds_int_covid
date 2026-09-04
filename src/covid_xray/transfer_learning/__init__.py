@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+from .callbacks import MacroF1Callback
+from .compare import (
+    load_histories,
+    load_metrics,
+    model_comparison,
+    plot_metric_across_runs,
+)
 from .config import TransferConfig
 from .dataset import build_datasets
 from .gradcam import (
@@ -16,13 +23,35 @@ from .gradcam import (
     save_lung_focus_report,
     summarize_lung_focus,
 )
-from .model import build_transfer_model
-from .pipeline import TransferResult, format_transfer_report, run_transfer_learning
+from .history import (
+    load_history,
+    plot_history_comparison,
+    plot_training_history,
+    save_history,
+)
+from .model import build_transfer_model, prepare_for_fine_tuning
+from .pipeline import (
+    TransferResult,
+    checkpoint_dir_for,
+    format_transfer_report,
+    run_transfer_learning,
+)
 
 __all__ = [
+    "MacroF1Callback",
     "TransferConfig",
     "build_datasets",
     "build_transfer_model",
+    "prepare_for_fine_tuning",
+    "checkpoint_dir_for",
+    "load_histories",
+    "load_history",
+    "load_metrics",
+    "model_comparison",
+    "plot_history_comparison",
+    "plot_metric_across_runs",
+    "plot_training_history",
+    "save_history",
     "build_gradcam_models",
     "compute_gradcam_heatmap",
     "gradcam_for_image",

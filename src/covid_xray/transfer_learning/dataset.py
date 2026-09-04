@@ -41,18 +41,26 @@ def load_mask(path: tf.Tensor, image_size: Tuple[int, int]) -> tf.Tensor:
     return tf.image.resize(mask, image_size, method="nearest")
 
 
+def load_mask_only(path: tf.Tensor, image_size: Tuple[int, int]) -> tf.Tensor:
+    """Load a segmentation mask as a 3-channel model input, ignoring the X-ray pixels.
+
+    Used to test how much class signal is carried by lung shape/geometry alone,
+    with zero pixel-intensity information from the original image.
+    """
+    return tf.image.grayscale_to_rgb(load_mask(path, image_size))
+
+
 def apply_lung_mask(image: tf.Tensor, mask: tf.Tensor, threshold: int) -> tf.Tensor:
     binary_mask = tf.cast(mask > threshold, image.dtype)
     return image * binary_mask
 
 
-def build_augmentation_pipeline() -> keras.Sequential:
-    return keras.Sequential(
-        [
-            keras.layers.RandomFlip("horizontal"),
-            keras.layers.RandomRotation(0.05),
-        ]
-    )
+def build_augmentation_pipeline(horizontal_flip: bool = True) -> keras.Sequential:
+    layers = []
+    if horizontal_flip:
+        layers.append(keras.layers.RandomFlip("horizontal"))
+    layers.append(keras.layers.RandomRotation(0.05))
+    return keras.Sequential(layers)
 
 
 def build_dataset(
@@ -64,7 +72,7 @@ def build_dataset(
     paths = frame[IMAGE_PATH_COLUMN].to_numpy()
     labels = encode_labels(frame)
 
-    if config.mask_lungs:
+    if config.mask_lungs or config.mask_only:
         mask_paths = frame[MASK_PATH_COLUMN].to_numpy()
         dataset = tf.data.Dataset.from_tensor_slices((paths, mask_paths, labels))
     else:
@@ -75,7 +83,15 @@ def build_dataset(
             buffer_size=len(frame), seed=config.random_state, reshuffle_each_iteration=True
         )
 
-    if config.mask_lungs:
+    if config.mask_only:
+        dataset = dataset.map(
+            lambda path, mask_path, label: (
+                load_mask_only(mask_path, config.image_size),
+                label,
+            ),
+            num_parallel_calls=AUTOTUNE,
+        )
+    elif config.mask_lungs:
         dataset = dataset.map(
             lambda path, mask_path, label: (
                 apply_lung_mask(
@@ -95,7 +111,7 @@ def build_dataset(
     dataset = dataset.batch(config.batch_size)
 
     if augment:
-        augmentation = build_augmentation_pipeline()
+        augmentation = build_augmentation_pipeline(horizontal_flip=config.horizontal_flip)
         dataset = dataset.map(
             lambda images, labels: (augmentation(images, training=True), labels),
             num_parallel_calls=AUTOTUNE,

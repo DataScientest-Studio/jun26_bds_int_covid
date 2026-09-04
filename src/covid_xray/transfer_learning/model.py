@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from tensorflow import keras
 
 from ..config import CLASS_NAMES
@@ -10,7 +12,11 @@ BACKBONE_BUILDERS = {
 }
 
 
-def build_transfer_model(config: TransferConfig = TransferConfig()) -> keras.Model:
+def build_transfer_model(
+    config: TransferConfig = TransferConfig(),
+    *,
+    backbone_training: bool | None = None,
+) -> keras.Model:
     """Build an EfficientNet with a new classification head on top.
 
     Inputs are expected as float32 pixels in [0, 255]: EfficientNet's Keras
@@ -25,9 +31,11 @@ def build_transfer_model(config: TransferConfig = TransferConfig()) -> keras.Mod
         pooling="avg",
     )
     backbone.trainable = not config.freeze_backbone
+    if backbone_training is None:
+        backbone_training = not config.freeze_backbone
 
     inputs = keras.Input(shape=(*config.image_size, 3))
-    features = backbone(inputs, training=False)
+    features = backbone(inputs, training=backbone_training)
     x = keras.layers.Dropout(config.dropout_rate)(features)
     x = keras.layers.Dense(config.dense_units, activation="relu")(x)
     x = keras.layers.Dropout(config.dropout_rate)(x)
@@ -40,3 +48,20 @@ def build_transfer_model(config: TransferConfig = TransferConfig()) -> keras.Mod
         metrics=["accuracy"],
     )
     return model
+
+
+def prepare_for_fine_tuning(
+    model: keras.Model, config: TransferConfig = TransferConfig()
+) -> keras.Model:
+    weights = model.get_weights()
+    fine_tune_config = replace(config, freeze_backbone=False, fine_tune=False)
+    fine_tuned_model = build_transfer_model(
+        fine_tune_config, backbone_training=True
+    )
+    fine_tuned_model.set_weights(weights)
+    fine_tuned_model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=config.fine_tune_learning_rate),
+        loss="sparse_categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+    return fine_tuned_model

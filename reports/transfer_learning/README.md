@@ -176,4 +176,107 @@ Tests for all of the above live in `tests/transfer_learning/test_transfer_gradca
 | `transfer_efficientnetb0_masked_gradcam.png` | masked | Qualitative Grad-CAM grid on the masked model (Section 6) |
 | `transfer_efficientnetb0_masked_lung_focus.{csv,png}` | masked | Lung focus vs. chance after masking (Section 6) |
 | `transfer_efficientnetb0_masked_lung_focus_by_correctness.{csv,png}` | masked | Lung focus, correct vs. misclassified, masked model |
+| `transfer_efficientnetb0_augmented_no_flip_metrics.json`, `*_confusion_matrix.png` | augmented, no flip | Metrics/confusion matrices for the no-horizontal-flip experiment (Section 12) |
+| `transfer_efficientnetb0_augmented_no_flip_history.{json,png}` | augmented, no flip | Per-epoch train/val loss, accuracy, and macro F1 (Section 12) |
+| `transfer_efficientnetb0_mask_only_metrics.json`, `*_confusion_matrix.png` | mask only (shape only) | Metrics/confusion matrices for the masks-only-input experiment (Section 13) |
+| `transfer_efficientnetb0_mask_only_history.{json,png}` | mask only (shape only) | Per-epoch train/val loss, accuracy, and macro F1 (Section 13) |
+| `all_models_test_comparison.png` | all runs | Accuracy/macro F1 bar chart across every run compared (Section 14) |
 | `gradcam.png` | — | Scratch/example output from ad hoc CLI runs during development; not a canonical report artifact. |
+
+## 11. Training tooling: history tracking, checkpoints, and run comparison
+
+To make it easy to compare outcomes across different training runs, `run_transfer_learning` now:
+
+- Tracks **validation macro F1 per epoch** (`covid_xray.transfer_learning.callbacks.MacroF1Callback`), since Keras has no built-in multi-class F1 metric. Training-set F1 can also be tracked with `--track-train-f1` (an extra prediction pass per epoch, off by default for speed).
+- Saves the full per-epoch history (`loss`, `val_loss`, `accuracy`, `val_accuracy`, `val_macro_f1`) to `{model_name}_history.json`, and plots train-vs-validation curves to `{model_name}_history.png` — the quickest way to eyeball over/underfitting.
+- Saves a **model checkpoint after every epoch** to `models/checkpoints/{model_name}/epoch_XXXX.keras` (`--save-checkpoints`, on by default), and supports `--resume` to continue training from the latest checkpoint (the merged history keeps every epoch across the interrupted and resumed runs).
+- Exposes `covid_xray.transfer_learning.compare` (`load_metrics`, `model_comparison`, `load_histories`, `plot_metric_across_runs`, `plot_test_comparison`) to pull every saved run's final metrics into one table, overlay any tracked metric (e.g. `val_loss`, `val_macro_f1`) across several runs on one chart, or render a labeled accuracy/macro-F1 bar chart across a chosen set of runs.
+
+## 12. Experiment: does removing horizontal flip help?
+
+Chest X-rays are not left/right symmetric in a clinically meaningless way (heart position, incidental laterality cues in some images), so horizontal flipping — the default in `build_augmentation_pipeline` — could plausibly hurt rather than help. We trained an otherwise-identical model with flipping disabled (`--augment --no-horizontal-flip`, rotation-only augmentation) and compared it against `transfer_efficientnetb0_augmented` (flip + rotation) on the held-out test split:
+
+| Model | Accuracy | Macro F1 | COVID F1 | Lung_Opacity F1 | Normal F1 | Viral Pneumonia F1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `transfer_efficientnetb0_augmented` (flip + rotation) | 87.62% | 0.884 | 0.879 | 0.832 | 0.892 | 0.935 |
+| `transfer_efficientnetb0_augmented_no_flip` (rotation only) | **88.38%** | **0.896** | 0.883 | **0.850** | 0.895 | **0.956** |
+
+Removing horizontal flipping improved every single metric on the test set — accuracy by +0.76 points and macro F1 by +1.15 points, with the biggest gains on `Lung_Opacity` (+1.85 pts F1) and `Viral Pneumonia` (+2.07 pts F1). This is consistent with the hypothesis that flipping was introducing a mild, unhelpful distribution shift rather than useful invariance for this task. Its own train/val curves (`transfer_efficientnetb0_augmented_no_flip_history.png`) show validation loss tracking below training loss throughout, with no sign of overfitting over 10 epochs.
+
+![Training history, augmented model without horizontal flip](./transfer_efficientnetb0_augmented_no_flip_history.png)
+
+**Recommendation:** drop horizontal flipping from the default augmentation pipeline for this dataset, or at minimum treat it as a tunable hyperparameter rather than an unquestioned default, and re-verify on any future model that adds flip back in (e.g. together with class weighting or unfreezing).
+
+### Reproduce
+
+```bash
+covid-xray-train-transfer --augment --no-horizontal-flip --epochs 10 --batch-size 32 \
+  --model-name transfer_efficientnetb0_augmented_no_flip
+```
+
+## 13. Experiment: how much can be learned from lung shape alone (masks-only input)?
+
+Section 6's masked model still gave the network real lung *pixels* (texture, density, opacities) — it only removed the background. That leaves an open question: how much of its remaining 83% accuracy came from lung *texture/pathology* versus just lung *shape/geometry*? To isolate shape alone, we trained an identical architecture on the segmentation masks themselves (`--mask-only`) — a binary lung silhouette with zero pixel-intensity information from the original X-ray, resized and duplicated across the 3 input channels EfficientNet expects.
+
+### Result: shape alone is a weak classifier, and COVID suffers the most
+
+| Metric | `transfer_efficientnetb0` (full image) | `transfer_efficientnetb0_masked` (lungs, texture kept) | `transfer_efficientnetb0_mask_only` (shape only) |
+| --- | --- | --- | --- |
+| Test accuracy | 89.70% | 83.07% | **74.07%** |
+| Test macro F1 | 0.907 | 0.823 | **0.703** |
+| COVID recall | 90.3% | 57.0% | **29.3%** |
+| COVID F1 | 0.923 | 0.678 | 0.413 |
+| Normal F1 | 0.906 | 0.872 | 0.818 |
+| Lung_Opacity F1 | 0.854 | 0.809 | 0.709 |
+| Viral Pneumonia F1 | 0.945 | 0.932 | 0.873 |
+
+Lung shape alone is barely better than a coin flip for COVID (29.3% recall, close to random for a 4-class problem), while `Normal` stays comparatively easy to recognize (F1 0.818) — consistent with `Normal` lungs having a more typical, less distorted silhouette, whereas COVID's radiographic signature is primarily about tissue density and opacity patterns *inside* the lung field rather than its outline. The test confusion matrix makes this concrete: of 535 true COVID X-rays, only 157 were correctly classified, with 215 mistaken for `Normal` and 162 for `Lung_Opacity` — the model, seeing only a lung outline, defaults to shapes that look "unremarkable" or "opaque" far more often than it should.
+
+![Confusion matrix, mask-only model (test split)](./transfer_efficientnetb0_mask_only_test_confusion_matrix.png)
+
+Training was stable with no overfitting (val loss tracked below train loss throughout, val macro F1 rising smoothly to ~0.72):
+
+![Training history, mask-only model](./transfer_efficientnetb0_mask_only_history.png)
+
+### Why this matters
+
+Combined with Section 6, this gives a three-way decomposition of where the original model's accuracy comes from:
+
+1. **~6.6 points** (89.70% → 83.07%) depend on **non-lung background/context** (Section 6's finding).
+2. **~9.0 further points** (83.07% → 74.07%) depend on **lung texture and density patterns**, not just shape.
+3. The remaining **~74% accuracy** is what pure **lung geometry/silhouette** can achieve on its own — well above the 25% random baseline, but a weak classifier by itself, and specifically unreliable for COVID.
+
+This reinforces Section 8's conclusion from a different angle: COVID classification in this dataset leans heavily on cues outside the lung's shape — partly legitimate texture-based pathology signal, but (per Section 6) also partly background leakage. A shape-only model is the most conservative, most anatomically-grounded baseline in this whole comparison, and it is also the one that struggles most with COVID — reinforcing that COVID recall in the fuller models should not be trusted at face value without the caveats raised throughout this report.
+
+### Reproduce
+
+```bash
+covid-xray-train-transfer --epochs 10 --batch-size 32 --mask-only \
+  --model-name transfer_efficientnetb0_mask_only
+```
+
+## 14. All EfficientNetB0 transfer-learning runs, compared
+
+Every run below shares the same architecture, split, and seed (Section 1); only the setting named is changed. Generated with `covid_xray.transfer_learning.compare.plot_test_comparison`.
+
+![All models compared, test split](./all_models_test_comparison.png)
+
+| Model | Setting changed | Test accuracy | Test macro F1 | Train-test accuracy gap | Train-test F1 gap |
+| --- | --- | --- | --- | --- | --- |
+| `transfer_efficientnetb0` | none (plain baseline) | **89.70%** | **0.907** | 2.77 pts | 2.67 pts |
+| `transfer_efficientnetb0_augmented` | + flip & rotation augmentation | 87.62% | 0.884 | 2.72 pts | 2.66 pts |
+| `transfer_efficientnetb0_augmented_no_flip` | + rotation-only augmentation | 88.38% | 0.896 | **1.98 pts** | **1.27 pts** |
+| `transfer_efficientnetb0_class_weighted` | + balanced class weights | 88.34% | 0.894 | 3.30 pts | 3.24 pts |
+| `transfer_efficientnetb0_masked` | lungs-only input, texture kept (causal test) | 83.07% | 0.823 | 1.30 pts | 0.69 pts |
+| `transfer_efficientnetb0_mask_only` | lung silhouette only, no texture (Section 13) | 74.07% | 0.703 | 2.19 pts | 2.18 pts |
+
+Takeaways:
+
+- **The plain baseline still has the highest raw accuracy and F1** of the non-masked models — but Section 6 shows a meaningful share of that is background leakage rather than lung pathology, so it shouldn't be read as "the best model" without that caveat.
+- **Augmentation without flipping is the best-calibrated of the full-image models**: close to the plain baseline's F1 (0.896 vs 0.907) while roughly halving the train-test generalization gap (1.98 vs 2.77 accuracy points, 1.27 vs 2.67 F1 points) — i.e. less overfitting for a small accuracy cost. This combines the findings of Sections 6 and 12: it's a genuine step towards a model that generalizes better, even though it can't fix the underlying background-leakage confound by itself.
+- **Flipping specifically hurt** (Section 12): augmented-with-flip is worse than augmented-without-flip on every test metric.
+- **Class weighting improves recall on the minority classes** (see the per-split breakdowns in Section 10's linked JSON files) but doesn't reduce the generalization gap — it's solving a different problem (class imbalance) than augmentation is (overfitting).
+- **The masked model has the smallest train-test gap** by a wide margin, but only because it was deprived of the (partly non-anatomical) signal the other models exploit — its lower absolute accuracy is the price of removing that confound, not evidence of a "better" model in isolation.
+- **The mask-only model is the weakest performer overall, and by far the worst on COVID** (Section 13) — it confirms that lung *shape* carries only modest class signal on its own, and that COVID in particular is not a "shape" diagnosis in this dataset. Its train-test gap (2.18-2.19 pts) sits between the full-image and lungs-only-texture models, suggesting shape-only features generalize reasonably but simply don't carry enough signal to compete on raw accuracy.
+
+None of these numbers should be read as a final ranking: they answer different questions (raw performance vs. generalization gap vs. causal validity), and the project's central limitation — dataset-level confounds around the COVID class — applies to all of them except the two masked variants. See Section 8 for the overall conclusion.

@@ -43,6 +43,79 @@ def test_run_transfer_learning_trains_and_evaluates(
     assert (tmp_path / "reports" / "transfer_learning" / "test_transfer_metrics.json").exists()
 
 
+def test_run_transfer_learning_tracks_val_macro_f1_per_epoch(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    config = TransferConfig(
+        image_size=(64, 64), pretrained=False, batch_size=4, epochs=2, dense_units=8,
+        early_stopping_patience=99,
+    )
+    result = run_step(processed_dir, tmp_path, config=config)
+
+    assert "val_macro_f1" in result.history
+    assert len(result.history["val_macro_f1"]) == len(result.history["loss"])
+
+
+def test_run_transfer_learning_saves_history_json_and_plot(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    result = run_step(processed_dir, tmp_path)
+
+    assert result.history_path is not None
+    assert result.history_path.exists()
+    assert (
+        tmp_path / "reports" / "transfer_learning" / "test_transfer_history.png"
+    ).exists()
+
+
+def test_run_transfer_learning_saves_checkpoint_per_epoch(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    config = TransferConfig(
+        image_size=(64, 64), pretrained=False, batch_size=4, epochs=2, dense_units=8,
+        early_stopping_patience=99,
+    )
+    run_step(processed_dir, tmp_path, config=config)
+
+    checkpoint_dir = tmp_path / "models" / "checkpoints" / "test_transfer"
+    checkpoints = sorted(checkpoint_dir.glob("epoch_*.keras"))
+    assert [path.name for path in checkpoints] == ["epoch_0001.keras", "epoch_0002.keras"]
+
+
+def test_run_transfer_learning_can_disable_checkpoints(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    config = TransferConfig(
+        image_size=(64, 64), pretrained=False, batch_size=4, epochs=1, dense_units=8,
+        save_checkpoints=False,
+    )
+    run_step(processed_dir, tmp_path, config=config)
+
+    checkpoint_dir = tmp_path / "models" / "checkpoints" / "test_transfer"
+    assert not checkpoint_dir.exists()
+
+
+def test_run_transfer_learning_resumes_from_latest_checkpoint(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    config = TransferConfig(
+        image_size=(64, 64), pretrained=False, batch_size=4, epochs=1, dense_units=8,
+        early_stopping_patience=99,
+    )
+    run_step(processed_dir, tmp_path, config=config)
+
+    resumed_config = TransferConfig(
+        image_size=(64, 64), pretrained=False, batch_size=4, epochs=2, dense_units=8,
+        early_stopping_patience=99,
+    )
+    result = run_step(processed_dir, tmp_path, config=resumed_config, resume=True)
+
+    checkpoint_dir = tmp_path / "models" / "checkpoints" / "test_transfer"
+    checkpoints = sorted(checkpoint_dir.glob("epoch_*.keras"))
+    assert [path.name for path in checkpoints] == ["epoch_0001.keras", "epoch_0002.keras"]
+    assert len(result.history["loss"]) == 2
+
+
 def test_run_transfer_learning_with_class_weight_trains_and_evaluates(
     processed_dir: Path, tmp_path: Path
 ) -> None:
@@ -127,3 +200,92 @@ def test_cli_dry_run_saves_nothing(
     capsys.readouterr()
     assert exit_code == 0
     assert not (tmp_path / "models").exists()
+
+
+def test_cli_no_horizontal_flip_flag_runs_end_to_end(
+    processed_dir: Path, tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    exit_code = main(
+        cli_args(processed_dir, tmp_path) + ["--augment", "--no-horizontal-flip"]
+    )
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Saved model" in output
+
+
+def test_cli_resume_flag_continues_from_checkpoint(
+    processed_dir: Path, tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    main(cli_args(processed_dir, tmp_path))
+    capsys.readouterr()
+
+    exit_code = main(cli_args(processed_dir, tmp_path) + ["--epochs", "2", "--resume"])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Saved model" in output
+
+
+def test_run_transfer_learning_with_fine_tune_trains_both_phases(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    config = TransferConfig(
+        image_size=(64, 64),
+        pretrained=True,
+        batch_size=4,
+        epochs=1,
+        fine_tune=True,
+        fine_tune_epochs=1,
+        dense_units=8,
+        early_stopping_patience=99,
+        fine_tune_early_stopping_patience=99,
+    )
+    result = run_step(processed_dir, tmp_path, config=config, model_name="test_finetune")
+
+    assert len(result.history["loss"]) == 2
+    assert len(result.history["val_macro_f1"]) == 2
+    assert result.model_path is not None
+    assert result.model_path.exists()
+
+
+def test_cli_fine_tune_flag_runs_end_to_end(
+    processed_dir: Path, tmp_path: Path, capsys: pytest.CaptureFixture
+) -> None:
+    exit_code = main(
+        [
+            "--processed-dir",
+            str(processed_dir),
+            "--models-dir",
+            str(tmp_path / "models"),
+            "--reports-dir",
+            str(tmp_path / "reports" / "transfer_learning"),
+            "--classes",
+            *CLASS_FOLDERS,
+            "--image-size",
+            "64",
+            "64",
+            "--batch-size",
+            "4",
+            "--epochs",
+            "1",
+            "--dense-units",
+            "8",
+            "--fine-tune",
+            "--fine-tune-epochs",
+            "1",
+            "--fine-tune-early-stopping-patience",
+            "99",
+        ]
+    )
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert "Saved model" in output
+
+
+def test_cli_rejects_fine_tune_with_unfreeze_backbone(
+    processed_dir: Path, tmp_path: Path
+) -> None:
+    with pytest.raises(SystemExit):
+        main(cli_args(processed_dir, tmp_path) + ["--fine-tune", "--unfreeze-backbone"])

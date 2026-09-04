@@ -3,20 +3,25 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+from tensorflow import keras
 
 from covid_xray.config import CLASS_COLUMN, LABEL_TO_ID
 from covid_xray.preprocessing import Splits
 from covid_xray.transfer_learning import TransferConfig
 from covid_xray.transfer_learning.dataset import (
     apply_lung_mask,
+    build_augmentation_pipeline,
     build_dataset,
     build_datasets,
     compute_balanced_class_weights,
     load_mask,
+    load_mask_only,
 )
 
 SMALL = TransferConfig(image_size=(32, 32), batch_size=4)
 MASKED = TransferConfig(image_size=(32, 32), batch_size=4, mask_lungs=True)
+MASK_ONLY = TransferConfig(image_size=(32, 32), batch_size=4, mask_only=True)
+NO_FLIP = TransferConfig(image_size=(32, 32), batch_size=4, horizontal_flip=False)
 
 
 def test_build_dataset_yields_batches_with_expected_shape_and_range(
@@ -42,6 +47,27 @@ def test_build_dataset_labels_match_manifest_encoding(manifest: pd.DataFrame) ->
 
 def test_build_dataset_with_augmentation_keeps_shape(manifest: pd.DataFrame) -> None:
     dataset = build_dataset(manifest, SMALL, shuffle=True, augment=True)
+    images, labels = next(iter(dataset))
+
+    assert tuple(images.shape[1:]) == (32, 32, 3)
+    assert labels.shape[0] == images.shape[0]
+
+
+def test_build_augmentation_pipeline_includes_flip_by_default() -> None:
+    pipeline = build_augmentation_pipeline(horizontal_flip=True)
+
+    assert any(isinstance(layer, keras.layers.RandomFlip) for layer in pipeline.layers)
+
+
+def test_build_augmentation_pipeline_can_disable_flip() -> None:
+    pipeline = build_augmentation_pipeline(horizontal_flip=False)
+
+    assert not any(isinstance(layer, keras.layers.RandomFlip) for layer in pipeline.layers)
+    assert any(isinstance(layer, keras.layers.RandomRotation) for layer in pipeline.layers)
+
+
+def test_build_dataset_without_horizontal_flip_keeps_shape(manifest: pd.DataFrame) -> None:
+    dataset = build_dataset(manifest, NO_FLIP, shuffle=True, augment=True)
     images, labels = next(iter(dataset))
 
     assert tuple(images.shape[1:]) == (32, 32, 3)
@@ -116,3 +142,48 @@ def test_build_dataset_with_mask_lungs_zeroes_background(
 
     assert tuple(images.shape[1:]) == (32, 32, 3)
     assert np.all(corners == 0.0)
+
+
+def test_load_mask_only_returns_rgb_mask(manifest_with_masks: pd.DataFrame) -> None:
+    import tensorflow as tf
+
+    mask_path = manifest_with_masks["mask_path"].iloc[0]
+
+    mask_rgb = load_mask_only(tf.constant(mask_path), (32, 32))
+
+    assert tuple(mask_rgb.shape) == (32, 32, 3)
+    channels = mask_rgb.numpy()
+    assert np.array_equal(channels[..., 0], channels[..., 1])
+    assert np.array_equal(channels[..., 1], channels[..., 2])
+
+
+def test_build_dataset_with_mask_only_ignores_original_image(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    dataset = build_dataset(manifest_with_masks, MASK_ONLY, shuffle=False, augment=False)
+    images, labels = next(iter(dataset))
+
+    values = np.unique(images.numpy())
+
+    assert tuple(images.shape[1:]) == (32, 32, 3)
+    assert labels.shape[0] == images.shape[0]
+    assert set(values.tolist()) <= {0.0, 255.0}
+
+
+def test_build_datasets_with_mask_only_returns_train_val_test(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    from covid_xray.preprocessing import SplitConfig, split_manifest
+
+    splits_with_masks = split_manifest(manifest_with_masks, SplitConfig())
+    datasets = build_datasets(splits_with_masks, MASK_ONLY)
+
+    assert set(datasets) == {"train", "val", "test"}
+    for dataset in datasets.values():
+        images, _ = next(iter(dataset))
+        assert tuple(images.shape[1:]) == (32, 32, 3)
+
+
+def test_mask_lungs_and_mask_only_are_mutually_exclusive() -> None:
+    with pytest.raises(ValueError):
+        TransferConfig(mask_lungs=True, mask_only=True)
