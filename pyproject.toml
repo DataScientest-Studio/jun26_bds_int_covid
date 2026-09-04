@@ -7,14 +7,16 @@ name = "covid-xray"
 version = "0.1.0"
 description = "COVID-19 chest X-ray classification study: preprocessing, training, and evaluation steps."
 requires-python = ">=3.10"
+
 dependencies = [
-    "numpy",
-    "opencv-python",
+    "numpy<2",
+    "scipy<1.14",
+    "opencv-python<5",
     "pandas",
-    "scikit-learn>=1.4",
+    "scikit-learn>=1.4,<1.6",
     "matplotlib",
     "joblib",
-    "tensorflow>=2.16",
+    "tensorflow>=2.16,<2.17",
 ]
 
 [project.optional-dependencies]
@@ -25,6 +27,7 @@ covid-xray-preprocess = "covid_xray.preprocessing.__main__:main"
 covid-xray-train-baseline = "covid_xray.training.__main__:main"
 covid-xray-train-transfer = "covid_xray.transfer_learning.__main__:main"
 covid-xray-gradcam = "covid_xray.transfer_learning.gradcam_cli:main"
+covid-xray-train-cnn = "covid_xray.cnn.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

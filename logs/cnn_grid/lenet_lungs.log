@@ -1,0 +1,105 @@
+2026-08-27 09:21:18.100216: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
+2026-08-27 09:21:18.100417: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
+2026-08-27 09:21:18.100437: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
+2026-08-27 09:21:18.100457: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-08-27 09:21:18.100472: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+Epoch 1/40
+2026-08-27 09:21:18.761151: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
+463/463 - 21s - 46ms/step - accuracy: 0.5261 - loss: 0.9766 - val_accuracy: 0.5676 - val_loss: 1.0567 - learning_rate: 0.0010
+Epoch 2/40
+463/463 - 18s - 39ms/step - accuracy: 0.5757 - loss: 0.8782 - val_accuracy: 0.5304 - val_loss: 0.9766 - learning_rate: 0.0010
+Epoch 3/40
+463/463 - 19s - 41ms/step - accuracy: 0.6229 - loss: 0.7715 - val_accuracy: 0.6501 - val_loss: 0.8588 - learning_rate: 0.0010
+Epoch 4/40
+463/463 - 19s - 41ms/step - accuracy: 0.6458 - loss: 0.7310 - val_accuracy: 0.6535 - val_loss: 0.7960 - learning_rate: 0.0010
+Epoch 5/40
+463/463 - 20s - 43ms/step - accuracy: 0.6710 - loss: 0.6801 - val_accuracy: 0.6907 - val_loss: 0.7417 - learning_rate: 0.0010
+Epoch 6/40
+463/463 - 25s - 54ms/step - accuracy: 0.6938 - loss: 0.6387 - val_accuracy: 0.7027 - val_loss: 0.7093 - learning_rate: 0.0010
+Epoch 7/40
+463/463 - 23s - 51ms/step - accuracy: 0.7098 - loss: 0.6132 - val_accuracy: 0.7065 - val_loss: 0.6905 - learning_rate: 0.0010
+Epoch 8/40
+463/463 - 28s - 60ms/step - accuracy: 0.7270 - loss: 0.5807 - val_accuracy: 0.7395 - val_loss: 0.6460 - learning_rate: 0.0010
+Epoch 9/40
+463/463 - 33s - 70ms/step - accuracy: 0.7347 - loss: 0.5635 - val_accuracy: 0.7231 - val_loss: 0.6678 - learning_rate: 0.0010
+Epoch 10/40
+463/463 - 27s - 59ms/step - accuracy: 0.7449 - loss: 0.5330 - val_accuracy: 0.7178 - val_loss: 0.6752 - learning_rate: 0.0010
+Epoch 11/40
+463/463 - 25s - 54ms/step - accuracy: 0.7581 - loss: 0.5096 - val_accuracy: 0.7380 - val_loss: 0.6461 - learning_rate: 0.0010
+Epoch 12/40
+463/463 - 26s - 56ms/step - accuracy: 0.7646 - loss: 0.4943 - val_accuracy: 0.7392 - val_loss: 0.6655 - learning_rate: 0.0010
+Epoch 13/40
+463/463 - 25s - 55ms/step - accuracy: 0.7896 - loss: 0.4471 - val_accuracy: 0.7351 - val_loss: 0.6646 - learning_rate: 5.0000e-04
+Epoch 14/40
+463/463 - 27s - 57ms/step - accuracy: 0.7958 - loss: 0.4323 - val_accuracy: 0.7427 - val_loss: 0.6441 - learning_rate: 5.0000e-04
+Epoch 15/40
+463/463 - 26s - 57ms/step - accuracy: 0.8036 - loss: 0.4179 - val_accuracy: 0.7597 - val_loss: 0.5957 - learning_rate: 5.0000e-04
+Epoch 16/40
+463/463 - 26s - 57ms/step - accuracy: 0.8089 - loss: 0.4066 - val_accuracy: 0.7625 - val_loss: 0.6113 - learning_rate: 5.0000e-04
+Epoch 17/40
+463/463 - 26s - 56ms/step - accuracy: 0.8145 - loss: 0.3917 - val_accuracy: 0.7644 - val_loss: 0.6094 - learning_rate: 5.0000e-04
+Epoch 18/40
+463/463 - 26s - 57ms/step - accuracy: 0.8225 - loss: 0.3782 - val_accuracy: 0.7644 - val_loss: 0.5914 - learning_rate: 5.0000e-04
+Epoch 19/40
+463/463 - 27s - 58ms/step - accuracy: 0.8269 - loss: 0.3694 - val_accuracy: 0.7650 - val_loss: 0.5948 - learning_rate: 5.0000e-04
+Epoch 20/40
+463/463 - 26s - 57ms/step - accuracy: 0.8313 - loss: 0.3595 - val_accuracy: 0.7783 - val_loss: 0.5890 - learning_rate: 5.0000e-04
+Epoch 21/40
+463/463 - 27s - 58ms/step - accuracy: 0.8418 - loss: 0.3433 - val_accuracy: 0.7669 - val_loss: 0.6048 - learning_rate: 5.0000e-04
+Epoch 22/40
+463/463 - 26s - 56ms/step - accuracy: 0.8437 - loss: 0.3333 - val_accuracy: 0.7739 - val_loss: 0.6076 - learning_rate: 5.0000e-04
+Epoch 23/40
+463/463 - 28s - 60ms/step - accuracy: 0.8493 - loss: 0.3217 - val_accuracy: 0.7720 - val_loss: 0.6017 - learning_rate: 5.0000e-04
+Epoch 24/40
+463/463 - 28s - 61ms/step - accuracy: 0.8563 - loss: 0.3092 - val_accuracy: 0.7647 - val_loss: 0.6146 - learning_rate: 5.0000e-04
+Epoch 25/40
+463/463 - 27s - 57ms/step - accuracy: 0.8739 - loss: 0.2777 - val_accuracy: 0.7559 - val_loss: 0.6338 - learning_rate: 2.5000e-04
+Epoch 26/40
+463/463 - 28s - 60ms/step - accuracy: 0.8772 - loss: 0.2710 - val_accuracy: 0.7761 - val_loss: 0.5902 - learning_rate: 2.5000e-04
+Epoch 27/40
+463/463 - 26s - 55ms/step - accuracy: 0.8811 - loss: 0.2639 - val_accuracy: 0.7761 - val_loss: 0.6031 - learning_rate: 2.5000e-04
+Epoch 28/40
+463/463 - 28s - 61ms/step - accuracy: 0.8850 - loss: 0.2570 - val_accuracy: 0.7628 - val_loss: 0.6436 - learning_rate: 2.5000e-04
+2026-08-27 09:33:45.877542: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-27 09:33:53.601371: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-27 09:34:02.545665: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+architecture: lenet
+
+region: lungs
+
+parameters: 61,196
+
+                    train       val      test
+class                                        
+COVID            0.170840  0.171024  0.170709
+Lung_Opacity     0.284036  0.284094  0.284094
+Normal           0.481539  0.481575  0.481575
+Viral Pneumonia  0.063584  0.063307  0.063622
+
+class weights: 0: 1.463, 1: 0.880, 2: 0.519, 3: 3.932
+
+lenet_lungs [train]
+  Accuracy: 0.8535
+  COVID: precision=0.731 recall=0.761 f1=0.745 support=2531
+  Lung_Opacity: precision=0.823 recall=0.880 f1=0.851 support=4208
+  Normal: precision=0.918 recall=0.852 f1=0.883 support=7134
+  Viral Pneumonia: precision=0.887 recall=0.999 f1=0.940 support=942
+  macro avg: precision=0.840 recall=0.873 f1=0.855
+
+lenet_lungs [val]
+  Accuracy: 0.7783
+  COVID: precision=0.601 recall=0.571 f1=0.585 support=543
+  Lung_Opacity: precision=0.730 recall=0.798 f1=0.763 support=902
+  Normal: precision=0.870 recall=0.818 f1=0.843 support=1529
+  Viral Pneumonia: precision=0.806 recall=0.950 f1=0.872 support=201
+  macro avg: precision=0.752 recall=0.784 f1=0.766
+
+lenet_lungs [test]
+  Accuracy: 0.7584
+  COVID: precision=0.569 recall=0.570 f1=0.570 support=542
+  Lung_Opacity: precision=0.721 recall=0.744 f1=0.732 support=902
+  Normal: precision=0.846 recall=0.813 f1=0.829 support=1529
+  Viral Pneumonia: precision=0.797 recall=0.916 f1=0.853 support=202
+  macro avg: precision=0.733 recall=0.761 f1=0.746
+
+Saved model: /Users/berfinaktas/Projects/covid_project_folders/jun26_bds_int_covid/models/lenet_lungs.keras

@@ -1,0 +1,90 @@
+from __future__ import annotations
+
+import json
+from dataclasses import replace
+from pathlib import Path
+
+import pytest
+from cnn_helpers import CLASS_FOLDERS, SMALL_CONFIG
+
+from covid_xray.cnn import format_cnn_report, run_cnn
+from covid_xray.preprocessing.config import SplitConfig
+
+
+def run(raw_dir: Path, tmp_path: Path, region: str, save: bool = True):
+    return run_cnn(
+        raw_dir=raw_dir,
+        class_folders=CLASS_FOLDERS,
+        split_config=SplitConfig(val_size=0.2, test_size=0.2),
+        config=replace(SMALL_CONFIG, region=region),
+        reports_dir=tmp_path / "reports",
+        models_dir=tmp_path / "models",
+        save=save,
+        verbose=0,
+    )
+
+
+def test_pipeline_evaluates_every_split(raw_dir: Path, tmp_path: Path) -> None:
+    result = run(raw_dir, tmp_path, "full", save=False)
+
+    assert set(result.evaluations) == {"train", "val", "test"}
+
+
+def test_pipeline_writes_region_suffixed_artifacts(raw_dir: Path, tmp_path: Path) -> None:
+    result = run(raw_dir, tmp_path, "background")
+
+    assert result.model_path == tmp_path / "models" / "cnn_scratch_background.keras"
+    assert result.model_path.exists()
+    assert (tmp_path / "reports" / "cnn_scratch_background_metrics.json").exists()
+
+
+def test_full_region_artifacts_are_unsuffixed(raw_dir: Path, tmp_path: Path) -> None:
+    # Matches the baseline convention, so compare.load_metrics reads the
+    # unsuffixed file as the full-image run.
+    result = run(raw_dir, tmp_path, "full")
+
+    assert result.model_path.name == "cnn_scratch.keras"
+
+
+def test_metrics_json_is_readable_by_the_comparison_helper(
+    raw_dir: Path, tmp_path: Path
+) -> None:
+    from covid_xray.training.compare import load_metrics
+
+    run(raw_dir, tmp_path, "full")
+    run(raw_dir, tmp_path, "background")
+
+    frame = load_metrics(tmp_path / "reports")
+    regions = set(frame[frame["split"] == "test"]["region"])
+
+    assert regions == {"full", "background"}
+
+
+def test_regions_share_split_membership(raw_dir: Path, tmp_path: Path) -> None:
+    full = run(raw_dir, tmp_path, "full", save=False)
+    background = run(raw_dir, tmp_path, "background", save=False)
+
+    # If this drifts, the region comparison is measuring two different
+    # test sets rather than two different pixel subsets.
+    assert list(full.splits.test["image_path"]) == list(background.splits.test["image_path"])
+
+
+def test_class_weights_are_disabled_when_configured(raw_dir: Path, tmp_path: Path) -> None:
+    result = run_cnn(
+        raw_dir=raw_dir,
+        class_folders=CLASS_FOLDERS,
+        split_config=SplitConfig(val_size=0.2, test_size=0.2),
+        config=replace(SMALL_CONFIG, class_weight=False),
+        save=False,
+        verbose=0,
+    )
+
+    assert result.class_weights == {}
+
+
+def test_report_mentions_region_and_parameters(raw_dir: Path, tmp_path: Path) -> None:
+    result = run(raw_dir, tmp_path, "lungs", save=False)
+    text = format_cnn_report(result)
+
+    assert "region: lungs" in text
+    assert "parameters:" in text

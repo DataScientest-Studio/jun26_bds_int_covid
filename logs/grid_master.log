@@ -1,0 +1,75 @@
+==========================================================
+CNN grid started 2026-08-27 09:13:33
+Architectures: lenet scratch
+Regions:       full lungs background
+Logs:          logs/cnn_grid/
+==========================================================
+
+[run ] lenet / full  -> logs/cnn_grid/lenet_full.log
+       done in 459s
+
+[run ] lenet / lungs  -> logs/cnn_grid/lenet_lungs.log
+       done in 773s
+
+[run ] lenet / background  -> logs/cnn_grid/lenet_background.log
+       done in 835s
+
+[run ] scratch / full  -> logs/cnn_grid/scratch_full.log
+Bad file descriptor
+         
+         Current thread 0x00000001eaf38840 (most recent call first):
+           <no Python frame>
+
+[run ] lenet / background  -> logs/cnn_grid/lenet_background.log
+       FAILED (exit 1) after 0s -- see logs/cnn_grid/lenet_background.log
+       last lines:
+         Python runtime state: core initialized
+         OSError: [Errno 9] Bad file descriptor
+         
+         Current thread 0x00000001eaf38840 (most recent call first):
+           <no Python frame>
+
+[run ] scratch / full  -> logs/cnn_grid/scratch_full.log
+       FAILED (exit 1) after 0s -- see logs/cnn_grid/scratch_full.log
+       last lines:
+         Python runtime state: core initialized
+         OSError: [Errno 9] Bad file descriptor
+         
+         Current thread 0x00000001eaf38840 (most recent call first):
+           <no Python frame>
+
+[run ] scratch / lungs  -> logs/cnn_grid/scratch_lungs.log
+       FAILED (exit 1) after 0s -- see logs/cnn_grid/scratch_lungs.log
+       last lines:
+         Python runtime state: core initialized
+         OSError: [Errno 9] Bad file descriptor
+         
+         Current thread 0x00000001eaf38840 (most recent call first):
+           <no Python frame>
+
+[run ] scratch / background  -> logs/cnn_grid/scratch_background.log
+       FAILED (exit 1) after 0s -- see logs/cnn_grid/scratch_background.log
+       last lines:
+         Python runtime state: core initialized
+         OSError: [Errno 9] Bad file descriptor
+         
+         Current thread 0x00000001eaf38840 (most recent call first):
+           <no Python frame>
+
+==========================================================
+Grid finished 2026-08-27 09:19:45 in 446s
+----------------------------------------------------------
+STATUS ARCH      REGION       TIME
+ok     lenet     full         446s
+FAIL   lenet     lungs        exit 1
+FAIL   lenet     background   exit 1
+FAIL   scratch   full         exit 1
+FAIL   scratch   lungs        exit 1
+FAIL   scratch   background   exit 1
+==========================================================
+
+test macro F1 by region
+model              full    lungs  background    epochs (f/l/b)
+cnn_scratch      0.9470   0.9037      0.9340             -/-/-
+              full - background gap: +0.0130
+lenet            0.8152     -           -                -/-/-

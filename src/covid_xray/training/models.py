@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sklearn.dummy import DummyClassifier
+from sklearn.dummy import DummyClassifier  # pyright: ignore[reportMissingModuleSource]
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import HistGradientBoostingClassifier
 
