@@ -13,6 +13,8 @@ from .config import (
     DEFAULT_LENET_VARIANT,
     DEFAULT_REGION,
     LENET_VARIANTS,
+    LUNG_NORMALIZATIONS,
+    DEFAULT_LUNG_NORMALIZATION,
     CNNConfig,
     default_image_size,
 )
@@ -94,6 +96,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--lung-normalization",
+        choices=LUNG_NORMALIZATIONS,
+        default=DEFAULT_LUNG_NORMALIZATION,
+        help=(
+            "Optional lungs-only normalization: "
+            "none, geometry, intensity, or both."
+        ),
+    )
     return parser
 
 
@@ -121,6 +132,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             architecture=args.architecture,
             lenet_variant=args.lenet_variant,
             region=args.region,
+            lung_normalization=args.lung_normalization,
             batch_size=args.batch_size,
             epochs=args.epochs,
             learning_rate=args.learning_rate,

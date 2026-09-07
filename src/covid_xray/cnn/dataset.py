@@ -15,6 +15,7 @@ from ..config import (
 )
 from ..preprocessing.manifest import Splits
 from .config import CNNConfig
+from .lung_normalization import normalize_lung_input
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -29,37 +30,105 @@ def load_masked_image(
     image_size: Tuple[int, int],
     region: str,
     mask_threshold: int,
+    lung_normalization: str = "none",
 ) -> tf.Tensor:
-    """Read a grayscale X-ray and zero out the pixels outside `region`.
+    """Load an X-ray and apply the requested image region."""
 
-    This is the tf.data equivalent of `training.features.apply_region`. The
-    discarded pixels are set to 0 rather than dropped, so the three regions
-    produce tensors of identical shape and a given pixel position means the
-    same thing in every condition.
-
-    `region` is a Python string fixed at graph-construction time, so the branch
-    below is resolved once and never becomes a per-example conditional.
-    """
     raw = tf.io.read_file(image_path)
-    image = tf.io.decode_png(raw, channels=1)
-    # INTER_AREA equivalent: "area" is the correct downsampling filter for
-    # X-rays, matching resize_image() in the preprocessing package.
-    image = tf.image.resize(image, image_size, method="area")
+
+    image = tf.io.decode_png(
+        raw,
+        channels=1,
+    )
 
     if region == "full":
-        return image
+        image = tf.image.resize(
+            image,
+            image_size,
+            method="area",
+        )
+
+        return tf.cast(
+            image,
+            tf.float32,
+        )
 
     mask_raw = tf.io.read_file(mask_path)
-    mask = tf.io.decode_png(mask_raw, channels=1)
-    # Nearest neighbour keeps the mask strictly binary. Any smoothing filter
-    # would blur the lung boundary into intermediate greys and leak a halo of
-    # lung-edge signal into the background condition.
-    mask = tf.image.resize(mask, image_size, method="nearest")
-    mask = tf.cast(mask, tf.float32)
+
+    mask = tf.io.decode_png(
+        mask_raw,
+        channels=1,
+    )
+
+    if region == "lungs" and lung_normalization != "none":
+
+        def _normalize(
+            image_np: np.ndarray,
+            mask_np: np.ndarray,
+        ) -> np.ndarray:
+            return normalize_lung_input(
+                image=image_np,
+                mask=mask_np,
+                target_size=image_size,
+                mode=lung_normalization,
+                mask_threshold=mask_threshold,
+            )
+
+        normalized = tf.numpy_function(
+            func=_normalize,
+            inp=[image, mask],
+            Tout=tf.float32,
+        )
+
+        normalized.set_shape(
+            (
+                image_size[0],
+                image_size[1],
+                1,
+            )
+        )
+
+        return normalized
+
+    image = tf.image.resize(
+        image,
+        image_size,
+        method="area",
+    )
+
+    image = tf.cast(
+        image,
+        tf.float32,
+    )
+
+    mask = tf.image.resize(
+        mask,
+        image_size,
+        method="nearest",
+    )
+
+    mask = tf.cast(
+        mask,
+        tf.float32,
+    )
 
     is_lung = mask > float(mask_threshold)
-    keep = is_lung if region == "lungs" else tf.logical_not(is_lung)
-    return image * tf.cast(keep, tf.float32)
+
+    if region == "lungs":
+        keep = is_lung
+
+    elif region == "background":
+        keep = tf.logical_not(is_lung)
+
+    else:
+        raise ValueError(
+            f"Unsupported region: {region!r}"
+        )
+
+    return image * tf.cast(
+        keep,
+        tf.float32,
+    )
 
 
 def build_augmentation_pipeline(seed: int) -> keras.Sequential:
@@ -114,6 +183,7 @@ def build_dataset(
                 config.image_size,
                 config.region,
                 config.mask_threshold,
+                config.lung_normalization,
             ),
             label,
         ),

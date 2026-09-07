@@ -24,6 +24,15 @@ LENET_PARAMETER_WARNING_THRESHOLD = 500_000
 
 DEFAULT_REGION = "full"
 
+LUNG_NORMALIZATIONS: Tuple[str, ...] = (
+    "none",
+    "geometry",
+    "intensity",
+    "both",
+)
+
+DEFAULT_LUNG_NORMALIZATION = "none"
+
 # Channels per convolution block for the scratch architecture. Four blocks at
 # 128x128 leaves an 8x8 feature map before global pooling.
 DEFAULT_FILTERS: Tuple[int, ...] = (32, 64, 128, 256)
@@ -50,6 +59,8 @@ class CNNConfig:
     image_size: Tuple[int, int] = DEFAULT_SCRATCH_IMAGE_SIZE
     architecture: str = DEFAULT_ARCHITECTURE
     region: str = DEFAULT_REGION
+    lung_normalization: str = DEFAULT_LUNG_NORMALIZATION
+
     mask_threshold: int = 127  # masks are 0/255 PNGs
     filters: Tuple[int, ...] = DEFAULT_FILTERS
     lenet_variant: str = DEFAULT_LENET_VARIANT
@@ -65,7 +76,7 @@ class CNNConfig:
     reduce_lr_factor: float = 0.5
     random_state: int = RANDOM_STATE
     simple_filters: Tuple[int, ...] = DEFAULT_SIMPLE_FILTERS
-
+    
     def __post_init__(self) -> None:
         if self.architecture not in ARCHITECTURES:
             raise ValueError(
@@ -81,6 +92,21 @@ class CNNConfig:
             raise ValueError(f"dropout_rate must be in [0, 1), got {self.dropout_rate}")
         if not self.filters:
             raise ValueError("filters must not be empty")
+        if self.lung_normalization not in LUNG_NORMALIZATIONS:
+            raise ValueError(
+                "lung_normalization must be one of "
+                f"{LUNG_NORMALIZATIONS}, "
+                f"got {self.lung_normalization!r}"
+            )
+
+        if (
+            self.lung_normalization != "none"
+            and self.region != "lungs"
+        ):
+            raise ValueError(
+                "lung normalization can only be used "
+                "with region='lungs'"
+            )
 
 
 def default_image_size(architecture: str) -> Tuple[int, int]:
