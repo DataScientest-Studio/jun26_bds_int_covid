@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional
@@ -27,7 +28,8 @@ EVAL_SPLITS = ("train", "val", "test")
 # One artifact name per architecture, so runs never overwrite each other and
 # the region suffix stays the only varying part of the filename.
 #DEFAULT_MODEL_NAMES = {"scratch": "cnn_scratch", "lenet": "lenet"}
-DEFAULT_MODEL_NAMES = {"scratch": "cnn_scratch_v2", "lenet": "lenet"}
+DEFAULT_MODEL_NAMES = {"simple": "cnn_simple","scratch": "cnn_scratch_v2", "lenet": "lenet"}
+
 
 def default_model_name(architecture: str) -> str:
     return DEFAULT_MODEL_NAMES[architecture]
@@ -95,12 +97,21 @@ def run_cnn(
             patience=config.reduce_lr_patience,
             min_lr=1e-6,
         ),
-        tf.keras.callbacks.ModelCheckpoint(
-            filepath=str(models_dir / f"{artifact_name(model_name, config.region)}_ckpt.keras"),
-            monitor="val_loss",
-            save_best_only=True,
-        ),
     ]
+    if save:
+        # The checkpoint writes during fit(), so the directory has to exist
+        # before training starts -- not only at save time further down.
+        # EarlyStopping(restore_best_weights=True) already guarantees the final
+        # saved model is the best epoch, so this is purely crash insurance. The
+        # _ckpt suffix keeps it out of compare.load_metrics' glob.
+        models_dir.mkdir(parents=True, exist_ok=True)
+        callbacks.append(
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(models_dir / f"{artifact_name(model_name, config.region)}_ckpt.keras"),
+                monitor="val_loss",
+                save_best_only=True,
+            )
+        )
 
     history = model.fit(
         datasets["train"],
@@ -114,6 +125,11 @@ def run_cnn(
         verbose=verbose,
     )
 
+    # Plain floats so the dict is JSON-serializable and safe to persist.
+    training_history = {
+        key: [float(value) for value in values] for key, values in history.history.items()
+    }
+
     label = artifact_name(model_name, config.region)
     evaluations = {
         split_name: evaluate_dataset(model, datasets[split_name], label, split_name)
@@ -122,7 +138,6 @@ def run_cnn(
 
     model_path = None
     if save:
-        models_dir.mkdir(parents=True, exist_ok=True)
         model_path = models_dir / f"{label}.keras"
         model.save(model_path)
 
@@ -131,12 +146,19 @@ def run_cnn(
                 result, reports_dir / f"{label}_{split_name}_confusion_matrix.png"
             )
         save_metrics(evaluations, reports_dir / f"{label}_metrics.json")
+        # Per-epoch curves: how many epochs actually ran before early stopping,
+        # and whether train and val diverged. Suffixed _history so
+        # compare.load_metrics does not read it as a model.
+        reports_dir.mkdir(parents=True, exist_ok=True)
+        (reports_dir / f"{label}_history.json").write_text(
+            json.dumps(training_history, indent=2, sort_keys=True)
+        )
 
     return CNNResult(
         splits=splits,
         region=config.region,
         architecture=config.architecture,
-        history={key: [float(v) for v in values] for key, values in history.history.items()},
+        history=training_history,
         evaluations=evaluations,
         class_weights=class_weights,
         model_path=model_path,

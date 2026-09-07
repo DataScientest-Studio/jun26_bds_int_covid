@@ -1,51 +1,19 @@
-2026-08-27 09:48:08.002447: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
-2026-08-27 09:48:08.002534: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
-2026-08-27 09:48:08.002549: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
-2026-08-27 09:48:08.002574: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
-2026-08-27 09:48:08.002596: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+2026-08-27 14:20:58.754990: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
+2026-08-27 14:20:58.755136: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
+2026-08-27 14:20:58.755176: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
+2026-08-27 14:20:58.755218: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-08-27 14:20:58.755263: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
 Epoch 1/40
-2026-08-27 09:48:09.948098: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
-463/463 - 696s - 2s/step - accuracy: 0.6329 - loss: 0.7753 - val_accuracy: 0.6463 - val_loss: 0.9328 - learning_rate: 0.0010
+2026-08-27 14:21:01.643655: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
+462/462 - 576s - 1s/step - accuracy: 0.6360 - loss: 0.7624 - val_accuracy: 0.5499 - val_loss: 1.1312 - learning_rate: 0.0010
 Epoch 2/40
-463/463 - 676s - 1s/step - accuracy: 0.7678 - loss: 0.4937 - val_accuracy: 0.8079 - val_loss: 0.5082 - learning_rate: 0.0010
+462/462 - 392s - 849ms/step - accuracy: 0.7619 - loss: 0.4952 - val_accuracy: 0.7618 - val_loss: 0.5837 - learning_rate: 0.0010
 Epoch 3/40
-463/463 - 650s - 1s/step - accuracy: 0.8121 - loss: 0.3973 - val_accuracy: 0.8220 - val_loss: 0.4741 - learning_rate: 0.0010
+462/462 - 425s - 920ms/step - accuracy: 0.8081 - loss: 0.3950 - val_accuracy: 0.8645 - val_loss: 0.3497 - learning_rate: 0.0010
 Epoch 4/40
-463/463 - 568s - 1s/step - accuracy: 0.8429 - loss: 0.3362 - val_accuracy: 0.8088 - val_loss: 0.5057 - learning_rate: 0.0010
+462/462 - 426s - 921ms/step - accuracy: 0.8376 - loss: 0.3391 - val_accuracy: 0.8449 - val_loss: 0.4031 - learning_rate: 0.0010
 Epoch 5/40
-463/463 - 537s - 1s/step - accuracy: 0.8556 - loss: 0.3019 - val_accuracy: 0.8835 - val_loss: 0.3072 - learning_rate: 0.0010
+462/462 - 443s - 958ms/step - accuracy: 0.8489 - loss: 0.3187 - val_accuracy: 0.8392 - val_loss: 0.4248 - learning_rate: 0.0010
 Epoch 6/40
-463/463 - 489s - 1s/step - accuracy: 0.8674 - loss: 0.2789 - val_accuracy: 0.8728 - val_loss: 0.3250 - learning_rate: 0.0010
+462/462 - 542s - 1s/step - accuracy: 0.8660 - loss: 0.2838 - val_accuracy: 0.8651 - val_loss: 0.3496 - learning_rate: 0.0010
 Epoch 7/40
-463/463 - 494s - 1s/step - accuracy: 0.8792 - loss: 0.2471 - val_accuracy: 0.8847 - val_loss: 0.3137 - learning_rate: 0.0010
-Epoch 8/40
-463/463 - 518s - 1s/step - accuracy: 0.8924 - loss: 0.2274 - val_accuracy: 0.9061 - val_loss: 0.2580 - learning_rate: 0.0010
-Epoch 9/40
-463/463 - 512s - 1s/step - accuracy: 0.8907 - loss: 0.2245 - val_accuracy: 0.8894 - val_loss: 0.3105 - learning_rate: 0.0010
-Epoch 10/40
-463/463 - 514s - 1s/step - accuracy: 0.8994 - loss: 0.2096 - val_accuracy: 0.8882 - val_loss: 0.3117 - learning_rate: 0.0010
-Epoch 11/40
-463/463 - 513s - 1s/step - accuracy: 0.9089 - loss: 0.1869 - val_accuracy: 0.8551 - val_loss: 0.4027 - learning_rate: 0.0010
-Epoch 12/40
-463/463 - 517s - 1s/step - accuracy: 0.9121 - loss: 0.1766 - val_accuracy: 0.8847 - val_loss: 0.3243 - learning_rate: 0.0010
-Epoch 13/40
-463/463 - 515s - 1s/step - accuracy: 0.9274 - loss: 0.1463 - val_accuracy: 0.9260 - val_loss: 0.2104 - learning_rate: 5.0000e-04
-Epoch 14/40
-463/463 - 526s - 1s/step - accuracy: 0.9317 - loss: 0.1348 - val_accuracy: 0.9269 - val_loss: 0.2035 - learning_rate: 5.0000e-04
-Epoch 15/40
-463/463 - 513s - 1s/step - accuracy: 0.9339 - loss: 0.1302 - val_accuracy: 0.9187 - val_loss: 0.2271 - learning_rate: 5.0000e-04
-Epoch 16/40
-463/463 - 510s - 1s/step - accuracy: 0.9374 - loss: 0.1206 - val_accuracy: 0.9307 - val_loss: 0.2004 - learning_rate: 5.0000e-04
-Epoch 17/40
-463/463 - 525s - 1s/step - accuracy: 0.9422 - loss: 0.1134 - val_accuracy: 0.9039 - val_loss: 0.2547 - learning_rate: 5.0000e-04
-Epoch 18/40
-463/463 - 542s - 1s/step - accuracy: 0.9357 - loss: 0.1262 - val_accuracy: 0.9361 - val_loss: 0.1893 - learning_rate: 5.0000e-04
-Epoch 19/40
-463/463 - 506s - 1s/step - accuracy: 0.9442 - loss: 0.1092 - val_accuracy: 0.9282 - val_loss: 0.2018 - learning_rate: 5.0000e-04
-Epoch 20/40
-463/463 - 435s - 940ms/step - accuracy: 0.9435 - loss: 0.1084 - val_accuracy: 0.9310 - val_loss: 0.2069 - learning_rate: 5.0000e-04
-Epoch 21/40
-463/463 - 413s - 893ms/step - accuracy: 0.9524 - loss: 0.0939 - val_accuracy: 0.8548 - val_loss: 0.4162 - learning_rate: 5.0000e-04
-Epoch 22/40
-463/463 - 408s - 881ms/step - accuracy: 0.9489 - loss: 0.0990 - val_accuracy: 0.9178 - val_loss: 0.2401 - learning_rate: 5.0000e-04
-Epoch 23/40

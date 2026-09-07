@@ -1,64 +1,56 @@
-2026-08-27 09:34:13.316868: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
-2026-08-27 09:34:13.316932: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
-2026-08-27 09:34:13.316945: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
-2026-08-27 09:34:13.317152: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
-2026-08-27 09:34:13.317174: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
+2026-08-27 14:11:47.543644: I metal_plugin/src/device/metal_device.cc:1154] Metal device set to: Apple M1
+2026-08-27 14:11:47.543879: I metal_plugin/src/device/metal_device.cc:296] systemMemory: 8.00 GB
+2026-08-27 14:11:47.543898: I metal_plugin/src/device/metal_device.cc:313] maxCacheSize: 2.67 GB
+2026-08-27 14:11:47.543927: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:305] Could not identify NUMA node of platform GPU ID 0, defaulting to 0. Your kernel may not have been built with NUMA support.
+2026-08-27 14:11:47.543950: I tensorflow/core/common_runtime/pluggable_device/pluggable_device_factory.cc:271] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:0 with 0 MB memory) -> physical PluggableDevice (device: 0, name: METAL, pci bus id: <undefined>)
 Epoch 1/40
-2026-08-27 09:34:14.191647: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
-463/463 - 29s - 63ms/step - accuracy: 0.5548 - loss: 0.8699 - val_accuracy: 0.6195 - val_loss: 0.8633 - learning_rate: 0.0010
+2026-08-27 14:11:48.401352: I tensorflow/core/grappler/optimizers/custom_graph_optimizer_registry.cc:117] Plugin optimizer for device_type GPU is enabled.
+462/462 - 28s - 61ms/step - accuracy: 0.5581 - loss: 0.8728 - val_accuracy: 0.6159 - val_loss: 0.9085 - learning_rate: 0.0010
 Epoch 2/40
-463/463 - 29s - 63ms/step - accuracy: 0.6295 - loss: 0.7318 - val_accuracy: 0.6652 - val_loss: 0.7859 - learning_rate: 0.0010
+462/462 - 25s - 55ms/step - accuracy: 0.6289 - loss: 0.7420 - val_accuracy: 0.6674 - val_loss: 0.7718 - learning_rate: 0.0010
 Epoch 3/40
-463/463 - 32s - 69ms/step - accuracy: 0.6647 - loss: 0.6800 - val_accuracy: 0.6926 - val_loss: 0.7371 - learning_rate: 0.0010
+462/462 - 20s - 44ms/step - accuracy: 0.6589 - loss: 0.6951 - val_accuracy: 0.5556 - val_loss: 0.9868 - learning_rate: 0.0010
 Epoch 4/40
-463/463 - 30s - 65ms/step - accuracy: 0.6844 - loss: 0.6422 - val_accuracy: 0.6863 - val_loss: 0.7467 - learning_rate: 0.0010
+462/462 - 25s - 53ms/step - accuracy: 0.6819 - loss: 0.6550 - val_accuracy: 0.6898 - val_loss: 0.7359 - learning_rate: 0.0010
 Epoch 5/40
-463/463 - 29s - 62ms/step - accuracy: 0.7012 - loss: 0.6099 - val_accuracy: 0.6926 - val_loss: 0.7468 - learning_rate: 0.0010
+462/462 - 21s - 46ms/step - accuracy: 0.6963 - loss: 0.6220 - val_accuracy: 0.6841 - val_loss: 0.7598 - learning_rate: 0.0010
 Epoch 6/40
-463/463 - 31s - 66ms/step - accuracy: 0.7139 - loss: 0.5783 - val_accuracy: 0.7203 - val_loss: 0.6810 - learning_rate: 0.0010
+462/462 - 23s - 49ms/step - accuracy: 0.7135 - loss: 0.5904 - val_accuracy: 0.7208 - val_loss: 0.6724 - learning_rate: 0.0010
 Epoch 7/40
-463/463 - 30s - 64ms/step - accuracy: 0.7272 - loss: 0.5553 - val_accuracy: 0.7121 - val_loss: 0.6922 - learning_rate: 0.0010
+462/462 - 21s - 45ms/step - accuracy: 0.7288 - loss: 0.5621 - val_accuracy: 0.7085 - val_loss: 0.7019 - learning_rate: 0.0010
 Epoch 8/40
-463/463 - 31s - 67ms/step - accuracy: 0.7405 - loss: 0.5276 - val_accuracy: 0.7307 - val_loss: 0.6458 - learning_rate: 0.0010
+462/462 - 22s - 47ms/step - accuracy: 0.7413 - loss: 0.5350 - val_accuracy: 0.6873 - val_loss: 0.7358 - learning_rate: 0.0010
 Epoch 9/40
-463/463 - 29s - 62ms/step - accuracy: 0.7557 - loss: 0.5075 - val_accuracy: 0.7165 - val_loss: 0.6845 - learning_rate: 0.0010
+462/462 - 27s - 59ms/step - accuracy: 0.7528 - loss: 0.5151 - val_accuracy: 0.7489 - val_loss: 0.6345 - learning_rate: 0.0010
 Epoch 10/40
-463/463 - 29s - 62ms/step - accuracy: 0.7655 - loss: 0.4827 - val_accuracy: 0.7332 - val_loss: 0.6558 - learning_rate: 0.0010
+462/462 - 19s - 40ms/step - accuracy: 0.7599 - loss: 0.4952 - val_accuracy: 0.7407 - val_loss: 0.6284 - learning_rate: 0.0010
 Epoch 11/40
-463/463 - 29s - 63ms/step - accuracy: 0.7734 - loss: 0.4652 - val_accuracy: 0.7307 - val_loss: 0.6560 - learning_rate: 0.0010
+462/462 - 21s - 45ms/step - accuracy: 0.7747 - loss: 0.4665 - val_accuracy: 0.7527 - val_loss: 0.6201 - learning_rate: 0.0010
 Epoch 12/40
-463/463 - 31s - 67ms/step - accuracy: 0.7895 - loss: 0.4404 - val_accuracy: 0.7443 - val_loss: 0.6398 - learning_rate: 0.0010
+462/462 - 21s - 46ms/step - accuracy: 0.7833 - loss: 0.4489 - val_accuracy: 0.7486 - val_loss: 0.6096 - learning_rate: 0.0010
 Epoch 13/40
-463/463 - 29s - 62ms/step - accuracy: 0.7939 - loss: 0.4224 - val_accuracy: 0.7181 - val_loss: 0.7172 - learning_rate: 0.0010
+462/462 - 20s - 44ms/step - accuracy: 0.7906 - loss: 0.4286 - val_accuracy: 0.7517 - val_loss: 0.6212 - learning_rate: 0.0010
 Epoch 14/40
-463/463 - 29s - 63ms/step - accuracy: 0.8032 - loss: 0.4103 - val_accuracy: 0.7093 - val_loss: 0.7149 - learning_rate: 0.0010
+462/462 - 21s - 46ms/step - accuracy: 0.8007 - loss: 0.4103 - val_accuracy: 0.7710 - val_loss: 0.5862 - learning_rate: 0.0010
 Epoch 15/40
-463/463 - 29s - 62ms/step - accuracy: 0.8111 - loss: 0.3880 - val_accuracy: 0.7480 - val_loss: 0.6547 - learning_rate: 0.0010
+462/462 - 21s - 45ms/step - accuracy: 0.8093 - loss: 0.3904 - val_accuracy: 0.7350 - val_loss: 0.6608 - learning_rate: 0.0010
 Epoch 16/40
-463/463 - 30s - 65ms/step - accuracy: 0.8218 - loss: 0.3669 - val_accuracy: 0.7587 - val_loss: 0.6294 - learning_rate: 0.0010
+462/462 - 21s - 46ms/step - accuracy: 0.8154 - loss: 0.3739 - val_accuracy: 0.7603 - val_loss: 0.6015 - learning_rate: 0.0010
 Epoch 17/40
-463/463 - 29s - 63ms/step - accuracy: 0.8308 - loss: 0.3458 - val_accuracy: 0.7515 - val_loss: 0.6395 - learning_rate: 0.0010
+462/462 - 25s - 54ms/step - accuracy: 0.8237 - loss: 0.3587 - val_accuracy: 0.7438 - val_loss: 0.6433 - learning_rate: 0.0010
 Epoch 18/40
-463/463 - 30s - 65ms/step - accuracy: 0.8396 - loss: 0.3323 - val_accuracy: 0.7546 - val_loss: 0.6294 - learning_rate: 0.0010
+462/462 - 20s - 44ms/step - accuracy: 0.8369 - loss: 0.3357 - val_accuracy: 0.7669 - val_loss: 0.5998 - learning_rate: 0.0010
 Epoch 19/40
-463/463 - 29s - 62ms/step - accuracy: 0.8487 - loss: 0.3113 - val_accuracy: 0.7528 - val_loss: 0.6675 - learning_rate: 0.0010
+462/462 - 20s - 43ms/step - accuracy: 0.8631 - loss: 0.2846 - val_accuracy: 0.7656 - val_loss: 0.6129 - learning_rate: 5.0000e-04
 Epoch 20/40
-463/463 - 30s - 65ms/step - accuracy: 0.8508 - loss: 0.2995 - val_accuracy: 0.7553 - val_loss: 0.6643 - learning_rate: 0.0010
+462/462 - 25s - 53ms/step - accuracy: 0.8673 - loss: 0.2722 - val_accuracy: 0.7587 - val_loss: 0.6377 - learning_rate: 5.0000e-04
 Epoch 21/40
-463/463 - 29s - 63ms/step - accuracy: 0.8831 - loss: 0.2477 - val_accuracy: 0.7581 - val_loss: 0.6657 - learning_rate: 5.0000e-04
+462/462 - 20s - 44ms/step - accuracy: 0.8765 - loss: 0.2584 - val_accuracy: 0.7754 - val_loss: 0.6057 - learning_rate: 5.0000e-04
 Epoch 22/40
-463/463 - 29s - 63ms/step - accuracy: 0.8913 - loss: 0.2314 - val_accuracy: 0.7691 - val_loss: 0.6412 - learning_rate: 5.0000e-04
-Epoch 23/40
-463/463 - 29s - 63ms/step - accuracy: 0.8962 - loss: 0.2222 - val_accuracy: 0.7635 - val_loss: 0.6609 - learning_rate: 5.0000e-04
-Epoch 24/40
-463/463 - 31s - 66ms/step - accuracy: 0.9016 - loss: 0.2123 - val_accuracy: 0.7625 - val_loss: 0.6707 - learning_rate: 5.0000e-04
-Epoch 25/40
-463/463 - 29s - 63ms/step - accuracy: 0.9139 - loss: 0.1891 - val_accuracy: 0.7603 - val_loss: 0.6749 - learning_rate: 2.5000e-04
-Epoch 26/40
-463/463 - 28s - 61ms/step - accuracy: 0.9193 - loss: 0.1812 - val_accuracy: 0.7717 - val_loss: 0.6593 - learning_rate: 2.5000e-04
-2026-08-27 09:47:39.193514: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
-2026-08-27 09:47:47.653812: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
-2026-08-27 09:47:55.468359: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+462/462 - 20s - 42ms/step - accuracy: 0.8809 - loss: 0.2501 - val_accuracy: 0.7697 - val_loss: 0.6119 - learning_rate: 5.0000e-04
+2026-08-27 14:20:28.227548: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-27 14:20:36.490815: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+2026-08-27 14:20:45.496343: W tensorflow/core/framework/local_rendezvous.cc:404] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
 architecture: lenet
 
 region: background
@@ -67,35 +59,35 @@ parameters: 61,196
 
                     train       val      test
 class                                        
-COVID            0.170840  0.171024  0.170709
-Lung_Opacity     0.284036  0.284094  0.284094
-Normal           0.481539  0.481575  0.481575
-Viral Pneumonia  0.063584  0.063307  0.063622
+COVID            0.168878  0.168983  0.168983
+Lung_Opacity     0.284825  0.284902  0.284902
+Normal           0.482875  0.482628  0.482944
+Viral Pneumonia  0.063422  0.063487  0.063171
 
-class weights: 0: 1.463, 1: 0.880, 2: 0.519, 3: 3.932
+class weights: 0: 1.480, 1: 0.878, 2: 0.518, 3: 3.942
 
 lenet_background [train]
-  Accuracy: 0.8705
-  COVID: precision=0.807 recall=0.840 f1=0.823 support=2531
-  Lung_Opacity: precision=0.844 recall=0.855 f1=0.850 support=4208
-  Normal: precision=0.904 recall=0.874 f1=0.889 support=7134
-  Viral Pneumonia: precision=0.916 recall=0.998 f1=0.955 support=942
-  macro avg: precision=0.868 recall=0.892 f1=0.879
+  Accuracy: 0.8346
+  COVID: precision=0.727 recall=0.775 f1=0.750 support=2495
+  Lung_Opacity: precision=0.839 recall=0.766 f1=0.801 support=4208
+  Normal: precision=0.863 recall=0.876 f1=0.869 support=7134
+  Viral Pneumonia: precision=0.897 recall=0.989 f1=0.941 support=937
+  macro avg: precision=0.831 recall=0.851 f1=0.840
 
 lenet_background [val]
-  Accuracy: 0.7546
-  COVID: precision=0.612 recall=0.659 f1=0.635 support=543
-  Lung_Opacity: precision=0.703 recall=0.706 f1=0.705 support=902
-  Normal: precision=0.837 recall=0.797 f1=0.816 support=1529
-  Viral Pneumonia: precision=0.803 recall=0.910 f1=0.853 support=201
-  macro avg: precision=0.739 recall=0.768 f1=0.752
+  Accuracy: 0.7710
+  COVID: precision=0.596 recall=0.677 f1=0.634 support=535
+  Lung_Opacity: precision=0.770 recall=0.660 f1=0.710 support=902
+  Normal: precision=0.829 recall=0.849 f1=0.839 support=1528
+  Viral Pneumonia: precision=0.842 recall=0.925 f1=0.882 support=201
+  macro avg: precision=0.759 recall=0.778 f1=0.766
 
 lenet_background [test]
-  Accuracy: 0.7654
-  COVID: precision=0.611 recall=0.677 f1=0.642 support=542
-  Lung_Opacity: precision=0.721 recall=0.712 f1=0.716 support=902
-  Normal: precision=0.842 recall=0.810 f1=0.825 support=1529
-  Viral Pneumonia: precision=0.863 recall=0.906 f1=0.884 support=202
-  macro avg: precision=0.759 recall=0.776 f1=0.767
+  Accuracy: 0.7508
+  COVID: precision=0.607 recall=0.617 f1=0.612 support=535
+  Lung_Opacity: precision=0.720 recall=0.642 f1=0.679 support=902
+  Normal: precision=0.807 recall=0.836 f1=0.821 support=1529
+  Viral Pneumonia: precision=0.812 recall=0.950 f1=0.876 support=200
+  macro avg: precision=0.736 recall=0.761 f1=0.747
 
 Saved model: /Users/berfinaktas/Projects/covid_project_folders/jun26_bds_int_covid/models/lenet_background.keras

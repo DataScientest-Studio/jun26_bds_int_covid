@@ -134,10 +134,52 @@ def build_lenet_model(config: CNNConfig = CNNConfig()) -> keras.Model:
         )
     return model
 
+def build_simple_model(config: CNNConfig = CNNConfig()) -> keras.Model:
+    """Build a minimal CNN baseline from random initialization."""
+
+    inputs = keras.Input(
+        shape=(*config.image_size, 1),
+        dtype="float32",
+        name="image",
+    )
+
+    x = keras.layers.Rescaling(
+        1.0 / PIXEL_MAX_VALUE,
+        name="rescale",
+    )(inputs)
+
+    for filters in config.simple_filters:
+        x = keras.layers.Conv2D(
+            filters,
+            kernel_size=3,
+            padding="same",
+            activation="relu",
+        )(x)
+
+        x = keras.layers.MaxPooling2D(
+            pool_size=2
+        )(x)
+
+    x = keras.layers.GlobalAveragePooling2D()(x)
+
+    outputs = keras.layers.Dense(
+        len(CLASS_NAMES),
+        activation="softmax",
+        dtype="float32",
+        name="predictions",
+    )(x)
+
+    return keras.Model(
+        inputs,
+        outputs,
+        name="cnn_simple",
+    )
 
 BUILDERS = {
+    "simple": build_simple_model,
     "scratch": build_scratch_model,
     "lenet": build_lenet_model,
+
 }
 
 

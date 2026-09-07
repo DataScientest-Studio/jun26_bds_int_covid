@@ -6,6 +6,7 @@ from pathlib import Path
 from cnn_helpers import CLASS_FOLDERS, SMALL_CONFIG
 
 from covid_xray.cnn import format_cnn_report, run_cnn
+from covid_xray.cnn.pipeline import default_model_name
 from covid_xray.preprocessing.config import SplitConfig
 
 LENET_SMALL = replace(SMALL_CONFIG, architecture="lenet")
@@ -27,8 +28,8 @@ def run(raw_dir: Path, tmp_path: Path, region: str = "full", save: bool = True):
 def test_lenet_artifacts_use_the_architecture_name(raw_dir: Path, tmp_path: Path) -> None:
     result = run(raw_dir, tmp_path, "background")
 
-    assert result.model_path == tmp_path / "models" / "lenet_background.keras"
-    assert (tmp_path / "reports" / "lenet_background_metrics.json").exists()
+    assert result.model_path == tmp_path / "models" / f"{default_model_name('lenet')}_background.keras"
+    assert (tmp_path / "reports" / f"{default_model_name('lenet')}_background_metrics.json").exists()
 
 
 def test_lenet_does_not_overwrite_scratch_artifacts(raw_dir: Path, tmp_path: Path) -> None:
@@ -56,7 +57,7 @@ def test_comparison_helper_sees_both_architectures(raw_dir: Path, tmp_path: Path
     frame = load_metrics(tmp_path / "reports")
     test_rows = frame[frame["split"] == "test"]
 
-    assert set(test_rows["model"]) == {"lenet"}
+    assert set(test_rows["model"]) == {default_model_name("lenet")}
     assert set(test_rows["region"]) == {"full", "background"}
 
 

@@ -47,6 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
         choices=ARCHITECTURES,
         default=DEFAULT_ARCHITECTURE,
         help=(
+            "simple = three-layer CNN baseline (16, 32, 64 filters); "
             "scratch = VGG-style stack with a global-average-pooling head; "
             "lenet = LeNet-5, a low-capacity floor (default: scratch)."
         ),

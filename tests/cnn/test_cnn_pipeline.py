@@ -8,6 +8,7 @@ import pytest
 from cnn_helpers import CLASS_FOLDERS, SMALL_CONFIG
 
 from covid_xray.cnn import format_cnn_report, run_cnn
+from covid_xray.cnn.pipeline import default_model_name
 from covid_xray.preprocessing.config import SplitConfig
 
 
@@ -33,9 +34,11 @@ def test_pipeline_evaluates_every_split(raw_dir: Path, tmp_path: Path) -> None:
 def test_pipeline_writes_region_suffixed_artifacts(raw_dir: Path, tmp_path: Path) -> None:
     result = run(raw_dir, tmp_path, "background")
 
-    assert result.model_path == tmp_path / "models" / "cnn_scratch_background.keras"
+    assert result.model_path == tmp_path / "models" / f"{default_model_name('scratch')}_background.keras"
     assert result.model_path.exists()
-    assert (tmp_path / "reports" / "cnn_scratch_background_metrics.json").exists()
+    assert (
+        tmp_path / "reports" / f"{default_model_name('scratch')}_background_metrics.json"
+    ).exists()
 
 
 def test_full_region_artifacts_are_unsuffixed(raw_dir: Path, tmp_path: Path) -> None:
@@ -43,7 +46,7 @@ def test_full_region_artifacts_are_unsuffixed(raw_dir: Path, tmp_path: Path) -> 
     # unsuffixed file as the full-image run.
     result = run(raw_dir, tmp_path, "full")
 
-    assert result.model_path.name == "cnn_scratch.keras"
+    assert result.model_path.name == f"{default_model_name('scratch')}.keras"
 
 
 def test_metrics_json_is_readable_by_the_comparison_helper(
@@ -88,3 +91,41 @@ def test_report_mentions_region_and_parameters(raw_dir: Path, tmp_path: Path) ->
 
     assert "region: lungs" in text
     assert "parameters:" in text
+
+
+def test_history_is_written_and_json_serializable(raw_dir: Path, tmp_path: Path) -> None:
+    result = run(raw_dir, tmp_path, "full")
+    path = tmp_path / "reports" / f"{default_model_name('scratch')}_history.json"
+
+    assert path.exists()
+    payload = json.loads(path.read_text())
+    assert set(payload) == set(result.history)
+    assert len(payload["loss"]) == len(result.history["loss"])
+    assert all(isinstance(v, float) for v in payload["loss"])
+
+
+def test_history_is_not_read_as_a_model_by_the_comparison_helper(
+    raw_dir: Path, tmp_path: Path
+) -> None:
+    from covid_xray.training.compare import load_metrics
+
+    run(raw_dir, tmp_path, "full")
+    frame = load_metrics(tmp_path / "reports")
+
+    assert set(frame["model"]) == {default_model_name("scratch")}
+
+
+def test_checkpoint_is_written_alongside_the_final_model(
+    raw_dir: Path, tmp_path: Path
+) -> None:
+    run(raw_dir, tmp_path, "lungs")
+    models = tmp_path / "models"
+
+    assert (models / f"{default_model_name('scratch')}_lungs.keras").exists()
+    assert (models / f"{default_model_name('scratch')}_lungs_ckpt.keras").exists()
+
+
+def test_dry_run_writes_no_checkpoint(raw_dir: Path, tmp_path: Path) -> None:
+    run(raw_dir, tmp_path, "full", save=False)
+
+    assert not (tmp_path / "models").exists()

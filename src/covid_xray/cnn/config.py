@@ -9,7 +9,7 @@ from ..training.config import REGIONS
 # Architectures that can be trained from random initialization.
 #   scratch -> the VGG-style stack defined by `filters`
 #   lenet   -> LeNet-5, as a genuine low-capacity floor
-ARCHITECTURES: Tuple[str, ...] = ("scratch", "lenet")
+ARCHITECTURES: Tuple[str, ...] = ("scratch", "lenet", "simple")
 DEFAULT_ARCHITECTURE = "scratch"
 
 # LeNet has only two pooling stages, so its Flatten layer grows with the square
@@ -27,6 +27,7 @@ DEFAULT_REGION = "full"
 # Channels per convolution block for the scratch architecture. Four blocks at
 # 128x128 leaves an 8x8 feature map before global pooling.
 DEFAULT_FILTERS: Tuple[int, ...] = (32, 64, 128, 256)
+DEFAULT_SIMPLE_FILTERS = (16, 32, 64)
 
 # LeNet-5 as published uses tanh activations and average pooling. Most modern
 # reimplementations silently substitute ReLU and max pooling, which is a
@@ -63,6 +64,7 @@ class CNNConfig:
     reduce_lr_patience: int = 4
     reduce_lr_factor: float = 0.5
     random_state: int = RANDOM_STATE
+    simple_filters: Tuple[int, ...] = DEFAULT_SIMPLE_FILTERS
 
     def __post_init__(self) -> None:
         if self.architecture not in ARCHITECTURES:

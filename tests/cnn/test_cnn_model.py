@@ -7,7 +7,36 @@ from cnn_helpers import SMALL_CONFIG
 from covid_xray.cnn import CNNConfig, build_cnn_model
 from covid_xray.config import CLASS_NAMES
 
+def test_simple_cnn_has_three_convolutional_layers() -> None:
+    config = CNNConfig(
+        architecture="simple",
+        image_size=(32, 32),
+    )
 
+    model = build_cnn_model(config)
+
+    conv_layers = [
+        layer
+        for layer in model.layers
+        if layer.__class__.__name__ == "Conv2D"
+    ]
+
+    assert len(conv_layers) == 3
+    assert [layer.filters for layer in conv_layers] == [16, 32, 64]
+
+def test_simple_cnn_has_no_batch_normalization() -> None:
+    config = CNNConfig(
+        architecture="simple",
+        image_size=(32, 32),
+    )
+
+    model = build_cnn_model(config)
+
+    assert not any(
+        layer.__class__.__name__ == "BatchNormalization"
+        for layer in model.layers
+    )
+    
 def test_output_shape_matches_num_classes() -> None:
     model = build_cnn_model(SMALL_CONFIG)
 
