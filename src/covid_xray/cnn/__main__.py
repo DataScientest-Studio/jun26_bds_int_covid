@@ -19,6 +19,7 @@ from .config import (
     default_image_size,
 )
 from .pipeline import CNN_REPORTS_DIR, format_cnn_report, run_cnn
+from covid_xray.cnn import config
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -120,6 +121,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         else default_image_size(args.architecture)
     )
 
+    cnn_config = CNNConfig(
+        image_size=image_size,
+        architecture=args.architecture,
+        lenet_variant=args.lenet_variant,
+        region=args.region,
+        lung_normalization=args.lung_normalization,
+        batch_size=args.batch_size,
+        epochs=args.epochs,
+        learning_rate=args.learning_rate,
+        dropout_rate=args.dropout_rate,
+        augment=args.augment,
+        class_weight=args.class_weight,
+        random_state=args.seed,
+    )
     result = run_cnn(
         raw_dir=args.raw_dir,
         class_folders={name: CLASS_FOLDERS[name] for name in args.classes},
@@ -127,26 +142,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         split_config=SplitConfig(
             val_size=args.val_size, test_size=args.test_size, random_state=args.seed
         ),
-        config=CNNConfig(
-            image_size=image_size,
-            architecture=args.architecture,
-            lenet_variant=args.lenet_variant,
-            region=args.region,
-            lung_normalization=args.lung_normalization,
-            batch_size=args.batch_size,
-            epochs=args.epochs,
-            learning_rate=args.learning_rate,
-            dropout_rate=args.dropout_rate,
-            augment=args.augment,
-            class_weight=args.class_weight,
-            random_state=args.seed,
-        ),
+        config=cnn_config,
         reports_dir=args.reports_dir,
         models_dir=args.models_dir,
         model_name=args.model_name,
         save=not args.dry_run,
     )
-
+    print(f"lung normalization: {cnn_config.lung_normalization}")
     print(format_cnn_report(result))
     return 0
 

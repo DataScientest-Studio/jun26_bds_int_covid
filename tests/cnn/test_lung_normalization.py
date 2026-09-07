@@ -82,3 +82,32 @@ def test_extreme_rotation_is_rejected(monkeypatch):
     angle = ln.estimate_lung_rotation(mask)
 
     assert angle == 0.0
+
+def test_intensity_normalization_handles_mismatched_shapes():
+    from covid_xray.cnn.lung_normalization import (
+        normalize_lung_input,
+    )
+
+    image = np.ones(
+        (299, 299),
+        dtype=np.float32,
+    ) * 150
+
+    mask = np.zeros(
+        (256, 256),
+        dtype=np.uint8,
+    )
+
+    mask[40:220, 30:105] = 255
+    mask[40:220, 150:225] = 255
+
+    result = normalize_lung_input(
+        image=image,
+        mask=mask,
+        target_size=(128, 128),
+        mode="intensity",
+        mask_threshold=127,
+    )
+
+    assert result.shape == (128, 128, 1)
+    assert np.isfinite(result).all()

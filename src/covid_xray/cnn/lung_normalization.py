@@ -302,6 +302,15 @@ def normalize_lung_input(
 ) -> np.ndarray:
 
     image = np.squeeze(image).astype(np.float32)
+    mask = np.squeeze(mask)
+
+    # IMPORTANT:
+    # Put the original X-ray into the same coordinate frame
+    # as the segmentation mask before any masking operation.
+    image, mask = align_image_to_mask_frame(
+        image,
+        mask,
+    )
 
     binary_mask = _binary_mask(
         mask,
@@ -318,7 +327,10 @@ def normalize_lung_input(
         )
 
     else:
-        # IMPORTANT: mask before resizing here too.
+        # Used by intensity-only mode.
+        #
+        # Image and mask are now guaranteed to have
+        # exactly the same dimensions.
         image = (
             image
             * binary_mask.astype(np.float32)
