@@ -8,8 +8,8 @@ from ..config import CLASS_NAMES, MODELS_DIR, PROCESSED_DIR, RANDOM_STATE
 from ..preprocessing.config import SplitConfig
 from .config import BACKBONES, DEFAULT_BACKBONE, TransferConfig
 from .pipeline import (
-    DEFAULT_MODEL_NAME,
     TRANSFER_REPORTS_DIR,
+    default_model_name,
     format_transfer_report,
     run_transfer_learning,
 )
@@ -18,9 +18,9 @@ from .pipeline import (
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Train an EfficientNet transfer-learning classifier on chest X-rays. "
-            "By default the ImageNet-pretrained backbone stays frozen and only a "
-            "small classification head is trained on top of it."
+            "Train a transfer-learning classifier (EfficientNetB0/B4 or ResNet50) on "
+            "chest X-rays. By default the ImageNet-pretrained backbone stays frozen "
+            "and only a small classification head is trained on top of it."
         )
     )
     parser.add_argument("--processed-dir", type=Path, default=PROCESSED_DIR)
@@ -58,6 +58,19 @@ def build_parser() -> argparse.ArgumentParser:
             "COVID/Viral Pneumonia)."
         ),
     )
+    parser.add_argument(
+        "--balance-classes",
+        action="store_true",
+        help=(
+            "Oversample the training split so every class has as many samples as "
+            "the largest class, duplicating minority-class rows. Duplicated rows "
+            "always go through the augmentation pipeline (rotation, plus "
+            "horizontal flip unless --no-horizontal-flip is set), even when "
+            "--augment is not passed, so they are not pixel-identical to their "
+            "source image. Combine with --no-horizontal-flip for asymmetric "
+            "anatomy such as chest X-rays."
+        ),
+    )
     mask_group = parser.add_mutually_exclusive_group()
     mask_group.add_argument(
         "--mask-lungs",
@@ -73,15 +86,56 @@ def build_parser() -> argparse.ArgumentParser:
             "signal comes from lung shape/geometry alone."
         ),
     )
+    mask_group.add_argument(
+        "--crop-lungs",
+        action="store_true",
+        help=(
+            "Crop a tight bounding box around the lungs (with configurable margin) and "
+            "resize to the model input size, keeping the natural chest boundary "
+            "instead of hard black masking."
+        ),
+    )
+    parser.add_argument(
+        "--crop-margin",
+        type=float,
+        default=TransferConfig().crop_margin_fraction,
+        help="Fractional margin added around the lung bounding box (default 0.08 = 8%%).",
+    )
+    parser.add_argument(
+        "--random-translation",
+        type=float,
+        default=TransferConfig().random_translation,
+        help=(
+            "Max random shift as a fraction of image height/width during training "
+            "augmentation (helps reduce reliance on fixed border positions)."
+        ),
+    )
+    parser.add_argument(
+        "--random-zoom",
+        type=float,
+        default=TransferConfig().random_zoom,
+        help=(
+            "Max random zoom as a fraction during training augmentation. Applied with "
+            "crop-lungs or when --augment is set."
+        ),
+    )
     parser.add_argument(
         "--mask-threshold", type=int, default=TransferConfig().mask_threshold
+    )
+    parser.add_argument(
+        "--masked-pooling",
+        action="store_true",
+        help=(
+            "Replace global average pooling with masked average pooling so the "
+            "classifier only aggregates backbone features where the lung mask is 1."
+        ),
     )
     parser.add_argument(
         "--unfreeze-backbone",
         action="store_true",
         dest="unfreeze_backbone",
         help=(
-            "Train the full EfficientNet from the start (single-phase). "
+            "Train the full backbone from the start (single-phase). "
             "Mutually exclusive with --fine-tune, which keeps phase 1 frozen."
         ),
     )
@@ -107,6 +161,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--fine-tune-early-stopping-patience",
         type=int,
         default=TransferConfig().fine_tune_early_stopping_patience,
+    )
+    parser.add_argument(
+        "--fine-tune-unfreeze-layers",
+        type=int,
+        default=TransferConfig().fine_tune_unfreeze_layers,
+        help=(
+            "Only unfreeze the last N backbone layers during fine-tuning instead "
+            "of the whole backbone (0, the default, unfreezes everything). "
+            "Unfreezing fewer layers is much cheaper on CPU since gradients no "
+            "longer need to flow through the earlier, frozen layers."
+        ),
     )
     parser.add_argument(
         "--reduce-lr-on-plateau",
@@ -161,8 +226,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=RANDOM_STATE)
     parser.add_argument(
         "--model-name",
-        default=DEFAULT_MODEL_NAME,
-        help="Name used for the saved model file and report filenames.",
+        default=None,
+        help=(
+            "Name used for the saved model file and report filenames. Defaults "
+            "to 'transfer_<backbone>' (e.g. 'transfer_resnet50') when omitted."
+        ),
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser
@@ -194,16 +262,23 @@ def main(argv: Sequence[str] | None = None) -> int:
             fine_tune_epochs=args.fine_tune_epochs,
             fine_tune_learning_rate=args.fine_tune_learning_rate,
             fine_tune_early_stopping_patience=args.fine_tune_early_stopping_patience,
+            fine_tune_unfreeze_layers=args.fine_tune_unfreeze_layers,
             reduce_lr_on_plateau=args.reduce_lr_on_plateau,
             reduce_lr_factor=args.reduce_lr_factor,
             reduce_lr_patience=args.reduce_lr_patience,
             reduce_lr_min_lr=args.reduce_lr_min_lr,
             augment=args.augment,
             horizontal_flip=args.horizontal_flip,
+            balance_classes=args.balance_classes,
             use_class_weight=args.use_class_weight,
             mask_lungs=args.mask_lungs,
             mask_only=args.mask_only,
+            crop_lungs=args.crop_lungs,
+            crop_margin_fraction=args.crop_margin,
+            random_translation=args.random_translation,
+            random_zoom=args.random_zoom,
             mask_threshold=args.mask_threshold,
+            masked_pooling=args.masked_pooling,
             track_train_f1=args.track_train_f1,
             save_checkpoints=args.save_checkpoints,
             random_state=args.seed,

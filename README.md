@@ -117,22 +117,28 @@ print(format_baseline_report(result))
 
 Outputs go to `models/baseline_dummy.joblib`, `models/baseline_logistic_regression.joblib`, and `reports/baseline/` (per-model metrics JSON and confusion matrix plots for train and test).
 
-## Training step: EfficientNet transfer learning
+## Training step: transfer learning (EfficientNetB0 / ResNet50)
 
-`covid_xray.transfer_learning` fine-tunes an ImageNet-pretrained EfficientNetB0 (Keras/TensorFlow) on chest X-rays. Unlike the baseline, it reads images directly from `data/processed/` (full resolution PNGs), not the `data/arrays/` `.npy` files, and keeps pixel values in `[0, 255]` because EfficientNet's Keras implementation normalizes internally.
+`covid_xray.transfer_learning` fine-tunes an ImageNet-pretrained backbone (Keras/TensorFlow) on chest X-rays. Two backbones are supported via `TransferConfig(backbone=...)`: `"efficientnetb0"` (default) and `"resnet50"`. Unlike the baseline, it reads images directly from `data/processed/` (full resolution PNGs), not the `data/arrays/` `.npy` files, and keeps pixel values in `[0, 255]`: EfficientNet's Keras implementation normalizes internally, and for ResNet50 the model graph applies `keras.applications.resnet50.preprocess_input` automatically before the backbone.
 
-By default the ImageNet backbone is **fully frozen** and only a small classification head (`GlobalAveragePooling -> Dropout -> Dense -> Dropout -> Dense(softmax)`) is trained on top of it. This "feature extraction" approach is the safest starting point for transfer learning: it trains fast, needs little data, and is unlikely to overfit or destroy the pretrained features. Fine-tuning (unfreezing some backbone layers for a low-learning-rate second pass) can be layered on later via `TransferConfig(freeze_backbone=False)`.
+By default the ImageNet backbone is **fully frozen** and only a small classification head (`GlobalAveragePooling -> Dropout -> Dense -> Dropout -> Dense(softmax)`) is trained on top of it. This "feature extraction" approach is the safest starting point for transfer learning: it trains fast, needs little data, and is unlikely to overfit or destroy the pretrained features. Fine-tuning (unfreezing some backbone layers for a low-learning-rate second pass) can be layered on later via `TransferConfig(freeze_backbone=False)` or `--fine-tune`.
 
-- `config.py`: `TransferConfig` (backbone, image size, batch size, epochs, learning rate, dropout, `pretrained` to toggle ImageNet weights, `augment` for light flip/rotation augmentation).
-- `dataset.py`: builds `tf.data.Dataset` pipelines straight from the manifest — decode PNG, resize, convert grayscale to 3-channel, batch, prefetch.
-- `model.py`: `build_transfer_model`, wiring the frozen (or unfrozen) EfficientNetB0 backbone to the new head.
+- `config.py`: `TransferConfig` (backbone, image size, batch size, epochs, learning rate, dropout, `pretrained` to toggle ImageNet weights, `augment` for light flip/rotation augmentation, `balance_classes` to equalize class counts).
+- `dataset.py`: builds `tf.data.Dataset` pipelines straight from the manifest — decode PNG, resize, convert grayscale to 3-channel, batch, prefetch. Also has `oversample_to_balance`, which duplicates minority-class rows up to the largest class's count for exact class balance.
+- `model.py`: `build_transfer_model`, wiring the frozen (or unfrozen) backbone (EfficientNetB0 or ResNet50) to the new head, including any backbone-specific input preprocessing.
 - `evaluation.py`: batched prediction + the same `EvaluationResult`/metrics/confusion-matrix format as the baseline, so results are directly comparable.
-- `pipeline.py`: `run_transfer_learning`, using the same manifest, same 70/15/15 stratified split, and same seed (42) as the other steps.
+- `pipeline.py`: `run_transfer_learning`, using the same manifest, same 70/15/15 stratified split, and same seed (42) as the other steps. Saved model/report filenames default to `transfer_<backbone>` when `--model-name`/`model_name` is omitted.
 
-Run it from the command line:
+Run it from the command line (defaults to EfficientNetB0):
 
 ```bash
 covid-xray-train-transfer --epochs 10 --batch-size 32
+```
+
+Or select ResNet50:
+
+```bash
+covid-xray-train-transfer --backbone resnet50 --epochs 10 --batch-size 32
 ```
 
 Or from Python:
@@ -140,11 +146,26 @@ Or from Python:
 ```python
 from covid_xray.transfer_learning import TransferConfig, format_transfer_report, run_transfer_learning
 
-result = run_transfer_learning(config=TransferConfig(epochs=10))
+result = run_transfer_learning(config=TransferConfig(backbone="resnet50", epochs=10))
 print(format_transfer_report(result))
 ```
 
-Outputs go to `models/transfer_efficientnetb0.keras` and `reports/transfer_learning/` (metrics JSON and confusion matrix plots for train/val/test).
+Outputs go to `models/transfer_efficientnetb0.keras` (or `models/transfer_resnet50.keras`) and `reports/transfer_learning/` (metrics JSON and confusion matrix plots for train/val/test).
+
+### Balancing classes: equal case counts via oversampling + augmentation
+
+By default the dataset is imbalanced (Normal and Lung_Opacity outnumber COVID and Viral Pneumonia). Two strategies address this, and they can be combined with `mask_lungs` to also remove all non-lung background pixels:
+
+- `use_class_weight` (`--class-weight`): keeps every real sample, but weights the loss so minority classes count more. The training set stays imbalanced in raw counts.
+- `balance_classes` (`--balance-classes`): actually equalizes the training set's class counts by duplicating minority-class rows up to the size of the largest class (`oversample_to_balance`). Every duplicated row is passed through the augmentation pipeline (rotation, plus horizontal flip unless disabled) so it is not a pixel-identical copy of its source image; original rows are left untouched unless `--augment` is also set. Validation and test splits are never touched, so evaluation stays on the true class distribution.
+
+Since chest X-ray anatomy is not left/right symmetric in a way that should be flipped, pair `--balance-classes` with `--no-horizontal-flip` to only use rotation for the synthetic copies:
+
+```bash
+covid-xray-train-transfer --balance-classes --no-horizontal-flip --mask-lungs
+```
+
+This trains on an exactly class-balanced set, with the background fully zeroed out via the lung segmentation mask, using rotation-only augmentation (no flip) to fill in the extra copies needed for the minority classes.
 
 ### Interpretability: Grad-CAM and lung-focus analysis
 

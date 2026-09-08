@@ -13,8 +13,9 @@ from ..training.evaluation import EvaluationResult
 def predict_dataset(model: tf.keras.Model, dataset: tf.data.Dataset) -> Tuple[np.ndarray, np.ndarray]:
     y_true = []
     y_pred = []
-    for images, labels in dataset:
-        probabilities = model.predict(images, verbose=0)
+    for batch in dataset:
+        inputs, labels = batch[0], batch[1]
+        probabilities = model.predict(inputs, verbose=0)
         y_pred.append(np.argmax(probabilities, axis=1))
         y_true.append(labels.numpy())
     return np.concatenate(y_true), np.concatenate(y_pred)

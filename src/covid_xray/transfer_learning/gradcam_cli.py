@@ -8,6 +8,7 @@ from tensorflow import keras
 
 from ..config import CLASS_FOLDERS, PROCESSED_DIR, RANDOM_STATE
 from .config import TransferConfig
+from .model import TRANSFER_CUSTOM_OBJECTS
 from .gradcam import (
     DEFAULT_BACKBONE_LAYER,
     aggregate_lung_focus,
@@ -51,6 +52,20 @@ def build_parser() -> argparse.ArgumentParser:
             "full, unmasked image."
         ),
     )
+    parser.add_argument(
+        "--apply-crop-to-input",
+        action="store_true",
+        help=(
+            "Crop a tight lung bounding box before feeding images to the model, "
+            "matching a model trained with --crop-lungs."
+        ),
+    )
+    parser.add_argument(
+        "--crop-margin",
+        type=float,
+        default=TransferConfig().crop_margin_fraction,
+        help="Fractional margin around the lung bounding box (must match training).",
+    )
     return parser
 
 
@@ -59,7 +74,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = build_parser().parse_args(argv)
 
-    model = keras.models.load_model(args.model_path)
+    model = keras.models.load_model(args.model_path, custom_objects=TRANSFER_CUSTOM_OBJECTS)
     manifest = build_manifest(processed_dir=args.processed_dir, class_folders=CLASS_FOLDERS)
     image_size = tuple(args.image_size)
 
@@ -72,6 +87,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         samples_per_class=args.samples_per_class,
         random_state=args.seed,
         apply_mask_to_input=args.apply_mask_to_input,
+        apply_crop_to_input=args.apply_crop_to_input,
+        crop_margin_fraction=args.crop_margin,
     )
     print(f"Saved Grad-CAM grid to {output_path}")
 
@@ -84,6 +101,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             sample_size=args.lung_focus_sample_size,
             random_state=args.seed,
             apply_mask_to_input=args.apply_mask_to_input,
+            apply_crop_to_input=args.apply_crop_to_input,
+            crop_margin_fraction=args.crop_margin,
         )
         csv_path, png_path = save_lung_focus_report(
             summary, args.output.parent, args.model_path.stem

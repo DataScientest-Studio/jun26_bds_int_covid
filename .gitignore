@@ -20,3 +20,4 @@ data/arrays/*
 .matplotlib/
 .ipynb_checkpoints/
 .DS_Store
+overleaf/

@@ -36,6 +36,54 @@ def test_find_last_conv_layer_name_returns_top_conv() -> None:
     assert find_last_conv_layer_name(backbone) == "top_conv"
 
 
+def test_find_last_conv_layer_name_works_for_efficientnetb4_backbone() -> None:
+    config = TransferConfig(
+        image_size=(64, 64), backbone="efficientnetb4", pretrained=False, dense_units=8
+    )
+    model = build_transfer_model(config)
+    backbone = model.get_layer("efficientnetb4")
+
+    assert find_last_conv_layer_name(backbone) == "top_conv"
+
+
+def test_build_gradcam_models_wires_efficientnetb4_backbone_and_classifier_head() -> None:
+    config = TransferConfig(
+        image_size=(64, 64), backbone="efficientnetb4", pretrained=False, dense_units=8
+    )
+    model = build_transfer_model(config)
+
+    backbone_grad_model, classifier_model = build_gradcam_models(
+        model, backbone_layer_name="efficientnetb4"
+    )
+
+    assert len(backbone_grad_model.outputs) == 2
+    assert classifier_model.output_shape[-1] == 4
+
+
+def test_find_last_conv_layer_name_works_for_resnet50_backbone() -> None:
+    config = TransferConfig(
+        image_size=(64, 64), backbone="resnet50", pretrained=False, dense_units=8
+    )
+    model = build_transfer_model(config)
+    backbone = model.get_layer("resnet50")
+
+    assert find_last_conv_layer_name(backbone) == "conv5_block3_3_conv"
+
+
+def test_build_gradcam_models_wires_resnet50_backbone_and_classifier_head() -> None:
+    config = TransferConfig(
+        image_size=(64, 64), backbone="resnet50", pretrained=False, dense_units=8
+    )
+    model = build_transfer_model(config)
+
+    backbone_grad_model, classifier_model = build_gradcam_models(
+        model, backbone_layer_name="resnet50"
+    )
+
+    assert classifier_model.output_shape == model.output_shape
+    assert len(backbone_grad_model.outputs) == 2
+
+
 def test_build_gradcam_models_wires_backbone_and_classifier_head() -> None:
     model = build_transfer_model(SMALL)
 
@@ -124,6 +172,19 @@ def test_lung_attention_fraction_is_nan_for_empty_heatmap() -> None:
     heatmap = np.zeros((4, 4), dtype=np.float32)
 
     assert np.isnan(lung_attention_fraction(heatmap, mask))
+
+
+def test_load_cropped_image_for_gradcam_returns_target_shape(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    row = manifest_with_masks.iloc[0]
+    image = load_cropped_image_for_gradcam(
+        row["image_path"],
+        row["mask_path"],
+        (64, 64),
+    )
+
+    assert image.shape == (64, 64, 3)
 
 
 def test_load_mask_for_gradcam_resizes_to_target_size(

@@ -163,16 +163,18 @@ def gradcam_for_image(
     mask_threshold: int = DEFAULT_MASK_THRESHOLD,
     apply_mask_to_input: bool = False,
 ) -> dict:
+    display_image = image_array
     model_input = image_array
     if apply_mask_to_input and mask is not None:
-        model_input = mask_image_array(image_array, mask, mask_threshold)
+        display_image = mask_image_array(image_array, mask, mask_threshold)
+        model_input = display_image
 
     heatmap, pred_index = compute_gradcam_heatmap(model_input, backbone_grad_model, classifier_model)
     heatmap_resized = resize_heatmap(heatmap, image_array.shape[:2])
-    overlay = overlay_heatmap(image_array.astype("uint8"), heatmap_resized)
+    overlay = overlay_heatmap(display_image.astype("uint8"), heatmap_resized)
 
     result = {
-        "image": image_array.astype("uint8"),
+        "image": display_image.astype("uint8"),
         "heatmap": heatmap_resized,
         "overlay": overlay,
         "predicted_label": ID_TO_LABEL[pred_index],

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Tuple
 
@@ -16,16 +16,22 @@ from ..training.evaluation import (
     save_metrics,
 )
 from .callbacks import MacroF1Callback
-from .config import TransferConfig
-from .dataset import build_datasets, compute_balanced_class_weights
+from .config import DEFAULT_BACKBONE, TransferConfig
+from .dataset import build_datasets, compute_balanced_class_weights, oversample_to_balance
 from .evaluation import evaluate_dataset
 from .history import load_history, plot_training_history, save_history
-from .model import build_transfer_model, prepare_for_fine_tuning
+from .model import TRANSFER_CUSTOM_OBJECTS, build_transfer_model, prepare_for_fine_tuning
 
 TRANSFER_REPORTS_DIR = REPORTS_DIR / "transfer_learning"
 EVAL_SPLITS = ("train", "val", "test")
-DEFAULT_MODEL_NAME = "transfer_efficientnetb0"
 CHECKPOINTS_DIRNAME = "checkpoints"
+
+
+def default_model_name(backbone: str) -> str:
+    return f"transfer_{backbone}"
+
+
+DEFAULT_MODEL_NAME = default_model_name(DEFAULT_BACKBONE)
 
 
 def checkpoint_dir_for(models_dir: Path | str, model_name: str) -> Path:
@@ -151,16 +157,22 @@ def run_transfer_learning(
     config: TransferConfig = TransferConfig(),
     reports_dir: Path | str = TRANSFER_REPORTS_DIR,
     models_dir: Path | str = MODELS_DIR,
-    model_name: str = DEFAULT_MODEL_NAME,
+    model_name: Optional[str] = None,
     save: bool = True,
     resume: bool = False,
     verbose: int = 2,
 ) -> TransferResult:
     reports_dir = Path(reports_dir)
     models_dir = Path(models_dir)
+    model_name = model_name or default_model_name(config.backbone)
 
     manifest = build_manifest(processed_dir=processed_dir, class_folders=class_folders)
     splits = split_manifest(manifest, split_config)
+    if config.balance_classes:
+        splits = replace(
+            splits,
+            train=oversample_to_balance(splits.train, random_state=config.random_state),
+        )
     datasets = build_datasets(splits, config)
 
     tf.keras.utils.set_random_seed(config.random_state)
@@ -172,7 +184,9 @@ def run_transfer_learning(
     if resume:
         latest_checkpoint = _latest_checkpoint(checkpoints_dir)
         if latest_checkpoint is not None:
-            model = tf.keras.models.load_model(latest_checkpoint)
+            model = tf.keras.models.load_model(
+                latest_checkpoint, custom_objects=TRANSFER_CUSTOM_OBJECTS
+            )
             initial_epoch = _epoch_from_checkpoint(latest_checkpoint)
             history_path = reports_dir / f"{model_name}_history.json"
             if history_path.exists():
@@ -208,7 +222,8 @@ def run_transfer_learning(
         history = _merge_histories(previous_history, history)
 
     if config.fine_tune:
-        completed_epochs = len(history.get("loss", []))
+        phase1_completed_epochs = len(history.get("loss", []))
+        phase2_initial_epoch = max(phase1_completed_epochs, initial_epoch)
         model = prepare_for_fine_tuning(model, config)
         phase2_callbacks, val_f1_callback, train_f1_callback = _build_callbacks(
             config,
@@ -222,8 +237,8 @@ def run_transfer_learning(
             model,
             datasets,
             config,
-            epochs=completed_epochs + config.fine_tune_epochs,
-            initial_epoch=completed_epochs,
+            epochs=phase1_completed_epochs + config.fine_tune_epochs,
+            initial_epoch=phase2_initial_epoch,
             callbacks=phase2_callbacks,
             val_f1_callback=val_f1_callback,
             train_f1_callback=train_f1_callback,

@@ -37,6 +37,7 @@ POSITIVE_CLASS = "COVID"
 CLASS_COLUMN = "class"
 IMAGE_PATH_COLUMN = "image_path"
 MASK_PATH_COLUMN = "mask_path"
+IS_DUPLICATE_COLUMN = "is_duplicate"
 MANIFEST_COLUMNS: Tuple[str, ...] = (CLASS_COLUMN, IMAGE_PATH_COLUMN, MASK_PATH_COLUMN)
 
 SPLITS: Tuple[str, ...] = ("train", "val", "test")

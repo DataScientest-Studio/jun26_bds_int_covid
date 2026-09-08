@@ -14,13 +14,21 @@ from covid_xray.transfer_learning.dataset import (
     build_dataset,
     build_datasets,
     compute_balanced_class_weights,
+    crop_to_lung_bbox,
+    load_cropped_lung_image,
     load_mask,
     load_mask_only,
+    oversample_to_balance,
 )
 
 SMALL = TransferConfig(image_size=(32, 32), batch_size=4)
 MASKED = TransferConfig(image_size=(32, 32), batch_size=4, mask_lungs=True)
+MASKED_POOLING = TransferConfig(image_size=(32, 32), batch_size=4, masked_pooling=True)
 MASK_ONLY = TransferConfig(image_size=(32, 32), batch_size=4, mask_only=True)
+CROPPED = TransferConfig(image_size=(32, 32), batch_size=4, crop_lungs=True)
+CROPPED_AUG = TransferConfig(
+    image_size=(32, 32), batch_size=4, crop_lungs=True, random_translation=0.1, random_zoom=0.1
+)
 NO_FLIP = TransferConfig(image_size=(32, 32), batch_size=4, horizontal_flip=False)
 
 
@@ -59,11 +67,81 @@ def test_build_augmentation_pipeline_includes_flip_by_default() -> None:
     assert any(isinstance(layer, keras.layers.RandomFlip) for layer in pipeline.layers)
 
 
+def test_build_augmentation_pipeline_can_include_spatial_layers() -> None:
+    pipeline = build_augmentation_pipeline(
+        horizontal_flip=False, random_translation=0.1, random_zoom=0.1
+    )
+
+    layer_types = {type(layer) for layer in pipeline.layers}
+    assert keras.layers.RandomTranslation in layer_types
+    assert keras.layers.RandomZoom in layer_types
+
+
 def test_build_augmentation_pipeline_can_disable_flip() -> None:
     pipeline = build_augmentation_pipeline(horizontal_flip=False)
 
     assert not any(isinstance(layer, keras.layers.RandomFlip) for layer in pipeline.layers)
     assert any(isinstance(layer, keras.layers.RandomRotation) for layer in pipeline.layers)
+
+
+def test_crop_to_lung_bbox_trims_large_background() -> None:
+    import tensorflow as tf
+
+    image = tf.ones((64, 64, 3), dtype=tf.float32) * 100.0
+    mask = tf.zeros((64, 64, 1), dtype=tf.float32)
+    mask = tf.tensor_scatter_nd_update(
+        mask,
+        [[20, 20], [20, 40], [40, 20], [40, 40]],
+        [[255.0], [255.0], [255.0], [255.0]],
+    )
+
+    cropped = crop_to_lung_bbox(image, mask, threshold=127, margin_fraction=0.05)
+
+    assert cropped.shape[0] < image.shape[0]
+    assert cropped.shape[1] < image.shape[1]
+
+
+def test_build_dataset_with_crop_lungs_fills_frame(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    import tensorflow as tf
+
+    dataset = build_dataset(manifest_with_masks, CROPPED, shuffle=False, augment=False)
+    images, _ = next(iter(dataset))
+
+    assert tuple(images.shape[1:]) == (32, 32, 3)
+    assert float(tf.reduce_max(images)) > 0.0
+
+
+def test_build_dataset_with_crop_lungs_applies_spatial_augment_on_train(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    from covid_xray.preprocessing import SplitConfig, split_manifest
+
+    splits = split_manifest(manifest_with_masks, SplitConfig())
+    datasets = build_datasets(splits, CROPPED_AUG)
+    train_batches = list(datasets["train"].take(2))
+    val_batches = list(datasets["val"].take(1))
+
+    assert train_batches[0][0].shape[1:] == (32, 32, 3)
+    assert val_batches[0][0].shape[1:] == (32, 32, 3)
+
+
+def test_load_cropped_lung_image_returns_target_size(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    import tensorflow as tf
+
+    row = manifest_with_masks.iloc[0]
+    image = load_cropped_lung_image(
+        tf.constant(row["image_path"]),
+        tf.constant(row["mask_path"]),
+        (32, 32),
+        threshold=127,
+        margin_fraction=0.08,
+    )
+
+    assert tuple(image.shape) == (32, 32, 3)
 
 
 def test_build_dataset_without_horizontal_flip_keeps_shape(manifest: pd.DataFrame) -> None:
@@ -184,6 +262,105 @@ def test_build_datasets_with_mask_only_returns_train_val_test(
         assert tuple(images.shape[1:]) == (32, 32, 3)
 
 
-def test_mask_lungs_and_mask_only_are_mutually_exclusive() -> None:
+def test_mask_lungs_mask_only_and_crop_lungs_are_mutually_exclusive() -> None:
     with pytest.raises(ValueError):
         TransferConfig(mask_lungs=True, mask_only=True)
+    with pytest.raises(ValueError):
+        TransferConfig(mask_lungs=True, crop_lungs=True)
+    with pytest.raises(ValueError):
+        TransferConfig(mask_only=True, crop_lungs=True)
+
+
+def test_build_dataset_with_masked_pooling_yields_image_and_mask(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    dataset = build_dataset(manifest_with_masks, MASKED_POOLING, shuffle=False, augment=False)
+    (images, masks), labels = next(iter(dataset))
+
+    assert tuple(images.shape[1:]) == (32, 32, 3)
+    assert tuple(masks.shape[1:]) == (32, 32, 1)
+    assert images.shape[0] == masks.shape[0] == labels.shape[0]
+    assert float(np.max(masks.numpy())) <= 255.0
+
+
+def test_build_dataset_with_masked_pooling_and_mask_lungs_zeroes_background(
+    manifest_with_masks: pd.DataFrame,
+) -> None:
+    config = TransferConfig(image_size=(32, 32), batch_size=4, masked_pooling=True, mask_lungs=True)
+    dataset = build_dataset(manifest_with_masks, config, shuffle=False, augment=False)
+    (images, _), _ = next(iter(dataset))
+
+    corners = images.numpy()[:, 0, 0, :]
+
+    assert np.all(corners == 0.0)
+
+
+def _imbalance(manifest: pd.DataFrame) -> pd.DataFrame:
+    return pd.concat(
+        [
+            manifest[manifest[CLASS_COLUMN] == "COVID"],
+            manifest[manifest[CLASS_COLUMN] == "Normal"].iloc[:5],
+            manifest[manifest[CLASS_COLUMN] == "Viral Pneumonia"].iloc[:10],
+        ]
+    ).reset_index(drop=True)
+
+
+def test_oversample_to_balance_equalizes_class_counts(manifest: pd.DataFrame) -> None:
+    balanced = oversample_to_balance(_imbalance(manifest), random_state=0)
+
+    counts = balanced[CLASS_COLUMN].value_counts()
+
+    assert counts.nunique() == 1
+    assert int(counts["COVID"]) == 20
+
+
+def test_oversample_to_balance_marks_added_rows_as_duplicates(
+    manifest: pd.DataFrame,
+) -> None:
+    balanced = oversample_to_balance(_imbalance(manifest), random_state=0)
+
+    covid_rows = balanced[balanced[CLASS_COLUMN] == "COVID"]
+    normal_rows = balanced[balanced[CLASS_COLUMN] == "Normal"]
+    viral_rows = balanced[balanced[CLASS_COLUMN] == "Viral Pneumonia"]
+
+    assert not covid_rows["is_duplicate"].any()
+    assert int(normal_rows["is_duplicate"].sum()) == 15
+    assert int(viral_rows["is_duplicate"].sum()) == 10
+
+
+def test_oversample_to_balance_is_deterministic(manifest: pd.DataFrame) -> None:
+    imbalanced = _imbalance(manifest)
+
+    first = oversample_to_balance(imbalanced, random_state=3)
+    second = oversample_to_balance(imbalanced, random_state=3)
+
+    pd.testing.assert_frame_equal(first, second)
+
+
+def test_build_dataset_augments_only_duplicate_rows(manifest: pd.DataFrame) -> None:
+    frame = manifest.iloc[:4].reset_index(drop=True).copy()
+    frame["is_duplicate"] = [False, True, False, True]
+    config = TransferConfig(image_size=(32, 32), batch_size=4, horizontal_flip=False)
+
+    dataset = build_dataset(frame, config, shuffle=False, augment=False)
+    reference = build_dataset(
+        frame.drop(columns=["is_duplicate"]), config, shuffle=False, augment=False
+    )
+
+    images = next(iter(dataset))[0].numpy()
+    reference_images = next(iter(reference))[0].numpy()
+
+    assert np.array_equal(images[0], reference_images[0])
+    assert np.array_equal(images[2], reference_images[2])
+    assert not np.array_equal(images[1], reference_images[1])
+    assert not np.array_equal(images[3], reference_images[3])
+
+
+def test_build_dataset_marks_no_rows_as_duplicate_when_column_absent(
+    manifest: pd.DataFrame,
+) -> None:
+    dataset = build_dataset(manifest, SMALL, shuffle=False, augment=False)
+    images, labels = next(iter(dataset))
+
+    assert tuple(images.shape[1:]) == (32, 32, 3)
+    assert labels.shape[0] == images.shape[0]
