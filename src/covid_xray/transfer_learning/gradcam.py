@@ -18,11 +18,15 @@ from ..config import (
 )
 from ..preprocessing.transforms import read_grayscale, resize_mask
 from .config import TransferConfig
-from .dataset import load_image
+from .dataset import load_cropped_lung_image, load_image
 
 DEFAULT_ALPHA = 0.4
 DEFAULT_BACKBONE_LAYER = "efficientnetb0"
 DEFAULT_MASK_THRESHOLD = 127
+
+
+def uses_masked_pooling(model: keras.Model) -> bool:
+    return len(model.inputs) == 2
 
 
 def find_last_conv_layer_name(backbone: keras.Model) -> str:
@@ -44,18 +48,52 @@ def build_gradcam_models(
 
     backbone_grad_model = keras.Model(backbone.inputs, [last_conv_layer.output, backbone.output])
 
-    classifier_input = keras.Input(shape=backbone.output.shape[1:])
-    x = classifier_input
+    if uses_masked_pooling(model):
+        mask_input_tensor = model.inputs[1]
+        features_input = keras.Input(
+            shape=backbone.output.shape[1:],
+            dtype=backbone.output.dtype,
+            name="gradcam_features",
+        )
+        mask_input_placeholder = keras.Input(
+            shape=mask_input_tensor.shape[1:],
+            dtype=mask_input_tensor.dtype,
+            name="gradcam_mask",
+        )
+        x: tf.Tensor | tuple[tf.Tensor, tf.Tensor] = (features_input, mask_input_placeholder)
+        classifier_inputs = [features_input, mask_input_placeholder]
+    else:
+        features_input = keras.Input(
+            shape=backbone.output.shape[1:],
+            dtype=backbone.output.dtype,
+            name="gradcam_features",
+        )
+        x = features_input
+        classifier_inputs = features_input
+
     after_backbone = False
     for layer in model.layers:
         if layer.name == backbone_layer_name:
             after_backbone = True
             continue
         if after_backbone:
+            if isinstance(layer, keras.layers.InputLayer):
+                continue
             x = layer(x)
-    classifier_model = keras.Model(classifier_input, x)
+    classifier_model = keras.Model(classifier_inputs, x)
 
     return backbone_grad_model, classifier_model
+
+
+def prepare_mask_for_model(
+    mask: np.ndarray,
+    image_size: Tuple[int, int],
+) -> np.ndarray:
+    if mask.ndim == 3 and mask.shape[-1] == 1:
+        mask = mask[..., 0]
+    if mask.shape[:2] != image_size:
+        mask = resize_mask(mask, image_size)
+    return mask[..., np.newaxis].astype(np.float32)
 
 
 def compute_gradcam_heatmap(
@@ -63,15 +101,27 @@ def compute_gradcam_heatmap(
     backbone_grad_model: keras.Model,
     classifier_model: keras.Model,
     pred_index: Optional[int] = None,
+    mask_array: Optional[np.ndarray] = None,
+    mask_threshold: int = DEFAULT_MASK_THRESHOLD,
 ) -> Tuple[np.ndarray, int]:
     inputs = tf.convert_to_tensor(image_array)
     if inputs.ndim == 3:
         inputs = inputs[tf.newaxis, ...]
 
+    is_masked_pooling = len(classifier_model.inputs) == 2
+    mask_tensor = None
     with tf.GradientTape() as tape:
         conv_output, pooled_features = backbone_grad_model(inputs)
         tape.watch(conv_output)
-        predictions = classifier_model(pooled_features)
+        if is_masked_pooling:
+            if mask_array is None:
+                raise ValueError("masked pooling models require a lung mask")
+            mask_tensor = tf.convert_to_tensor(mask_array, dtype=tf.float32)
+            if mask_tensor.ndim == 3:
+                mask_tensor = mask_tensor[tf.newaxis, ...]
+            predictions = classifier_model([pooled_features, mask_tensor])
+        else:
+            predictions = classifier_model(pooled_features)
         if pred_index is None:
             pred_index = int(tf.argmax(predictions[0]))
         class_channel = predictions[:, pred_index]
@@ -79,6 +129,11 @@ def compute_gradcam_heatmap(
     grads = tape.gradient(class_channel, conv_output)
     pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
     conv_output = conv_output[0]
+    if is_masked_pooling:
+        conv_spatial = tf.shape(conv_output)[:2]
+        mask_resized = tf.image.resize(mask_tensor, conv_spatial, method="nearest")
+        mask_binary = tf.cast(mask_resized[0] > mask_threshold, conv_output.dtype)
+        conv_output = conv_output * mask_binary
     heatmap = conv_output @ pooled_grads[..., tf.newaxis]
     heatmap = tf.squeeze(heatmap)
     heatmap = tf.maximum(heatmap, 0)
@@ -108,6 +163,22 @@ def overlay_heatmap(
 
 def load_image_for_gradcam(image_path: str, image_size: Tuple[int, int]) -> np.ndarray:
     return load_image(tf.constant(image_path), image_size).numpy()
+
+
+def load_cropped_image_for_gradcam(
+    image_path: str,
+    mask_path: str,
+    image_size: Tuple[int, int],
+    threshold: int = DEFAULT_MASK_THRESHOLD,
+    margin_fraction: float = TransferConfig().crop_margin_fraction,
+) -> np.ndarray:
+    return load_cropped_lung_image(
+        tf.constant(image_path),
+        tf.constant(mask_path),
+        image_size,
+        threshold,
+        margin_fraction,
+    ).numpy()
 
 
 def load_mask_for_gradcam(mask_path: str, image_size: Tuple[int, int]) -> np.ndarray:
@@ -169,7 +240,19 @@ def gradcam_for_image(
         display_image = mask_image_array(image_array, mask, mask_threshold)
         model_input = display_image
 
-    heatmap, pred_index = compute_gradcam_heatmap(model_input, backbone_grad_model, classifier_model)
+    model_mask = None
+    if len(classifier_model.inputs) == 2:
+        if mask is None:
+            raise ValueError("masked pooling models require a lung mask")
+        model_mask = prepare_mask_for_model(mask, image_array.shape[:2])
+
+    heatmap, pred_index = compute_gradcam_heatmap(
+        model_input,
+        backbone_grad_model,
+        classifier_model,
+        mask_array=model_mask,
+        mask_threshold=mask_threshold,
+    )
     heatmap_resized = resize_heatmap(heatmap, image_array.shape[:2])
     overlay = overlay_heatmap(display_image.astype("uint8"), heatmap_resized)
 
@@ -197,6 +280,8 @@ def save_gradcam_grid(
     samples_per_class: int = 1,
     random_state: int = RANDOM_STATE,
     apply_mask_to_input: bool = False,
+    apply_crop_to_input: bool = False,
+    crop_margin_fraction: float = TransferConfig().crop_margin_fraction,
 ) -> Path:
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
@@ -220,12 +305,26 @@ def save_gradcam_grid(
     FigureCanvasAgg(figure)
 
     has_masks = MASK_PATH_COLUMN in samples.columns
+    requires_mask = uses_masked_pooling(model)
 
     for row_index, row in samples.iterrows():
-        image_array = load_image_for_gradcam(row[IMAGE_PATH_COLUMN], image_size)
         mask = None
-        if has_masks and Path(row[MASK_PATH_COLUMN]).exists():
-            mask = load_mask_for_gradcam(row[MASK_PATH_COLUMN], image_size)
+        mask_path = row[MASK_PATH_COLUMN] if has_masks else None
+        if has_masks and mask_path is not None and Path(mask_path).exists():
+            mask = load_mask_for_gradcam(mask_path, image_size)
+        if apply_crop_to_input:
+            if mask_path is None or not Path(mask_path).exists():
+                raise ValueError("apply_crop_to_input requires mask paths in the manifest")
+            image_array = load_cropped_image_for_gradcam(
+                row[IMAGE_PATH_COLUMN],
+                mask_path,
+                image_size,
+                margin_fraction=crop_margin_fraction,
+            )
+        else:
+            image_array = load_image_for_gradcam(row[IMAGE_PATH_COLUMN], image_size)
+        if requires_mask and mask is None:
+            raise ValueError("masked pooling models require mask paths in the manifest")
         result = gradcam_for_image(
             model,
             image_array,
@@ -263,6 +362,8 @@ def summarize_lung_focus(
     sample_size: Optional[int] = None,
     random_state: int = RANDOM_STATE,
     apply_mask_to_input: bool = False,
+    apply_crop_to_input: bool = False,
+    crop_margin_fraction: float = TransferConfig().crop_margin_fraction,
 ) -> pd.DataFrame:
     """Compute, per image, how much Grad-CAM attention falls inside the lung mask.
 
@@ -284,14 +385,31 @@ def summarize_lung_focus(
         model, backbone_layer_name, last_conv_layer_name
     )
 
+    requires_mask = uses_masked_pooling(model)
     records = []
     for _, row in frame.iterrows():
-        image_array = load_image_for_gradcam(row[IMAGE_PATH_COLUMN], image_size)
         mask = load_mask_for_gradcam(row[MASK_PATH_COLUMN], image_size)
+        if apply_crop_to_input:
+            image_array = load_cropped_image_for_gradcam(
+                row[IMAGE_PATH_COLUMN],
+                row[MASK_PATH_COLUMN],
+                image_size,
+                threshold=mask_threshold,
+                margin_fraction=crop_margin_fraction,
+            )
+        else:
+            image_array = load_image_for_gradcam(row[IMAGE_PATH_COLUMN], image_size)
         model_input = image_array
         if apply_mask_to_input:
             model_input = mask_image_array(image_array, mask, mask_threshold)
-        heatmap, pred_index = compute_gradcam_heatmap(model_input, backbone_grad_model, classifier_model)
+        model_mask = prepare_mask_for_model(mask, image_size) if requires_mask else None
+        heatmap, pred_index = compute_gradcam_heatmap(
+            model_input,
+            backbone_grad_model,
+            classifier_model,
+            mask_array=model_mask,
+            mask_threshold=mask_threshold,
+        )
         heatmap_resized = resize_heatmap(heatmap, image_size)
         is_lung = mask > mask_threshold
 

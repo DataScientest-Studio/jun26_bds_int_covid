@@ -15,6 +15,7 @@ from covid_xray.transfer_learning.gradcam import (
     draw_mask_contour,
     find_last_conv_layer_name,
     gradcam_for_image,
+    load_cropped_image_for_gradcam,
     load_mask_for_gradcam,
     lung_attention_fraction,
     mask_image_array,
@@ -82,6 +83,62 @@ def test_build_gradcam_models_wires_resnet50_backbone_and_classifier_head() -> N
 
     assert classifier_model.output_shape == model.output_shape
     assert len(backbone_grad_model.outputs) == 2
+
+
+def test_build_gradcam_models_wires_masked_pooling_backbone_and_classifier_head() -> None:
+    config = TransferConfig(image_size=(64, 64), pretrained=False, dense_units=8, masked_pooling=True)
+    model = build_transfer_model(config)
+
+    backbone_grad_model, classifier_model = build_gradcam_models(model)
+
+    assert len(backbone_grad_model.outputs) == 2
+    assert len(classifier_model.inputs) == 2
+    assert classifier_model.output_shape[-1] == 4
+
+
+def test_compute_gradcam_heatmap_works_for_masked_pooling_model() -> None:
+    config = TransferConfig(image_size=(64, 64), pretrained=False, dense_units=8, masked_pooling=True)
+    model = build_transfer_model(config)
+    backbone_grad_model, classifier_model = build_gradcam_models(model)
+    image = np.random.default_rng(0).uniform(0, 255, size=(64, 64, 3)).astype("float32")
+    mask = np.zeros((64, 64, 1), dtype=np.float32)
+    mask[16:48, 16:48, 0] = 255.0
+
+    heatmap, pred_index = compute_gradcam_heatmap(
+        image,
+        backbone_grad_model,
+        classifier_model,
+        mask_array=mask,
+    )
+
+    assert heatmap.ndim == 2
+    assert float(np.min(heatmap)) >= 0.0
+    assert float(np.max(heatmap)) <= 1.0
+    assert 0 <= pred_index < model.output_shape[-1]
+
+
+def test_compute_gradcam_heatmap_is_zero_outside_lung_mask_for_masked_pooling_model() -> None:
+    import tensorflow as tf
+
+    config = TransferConfig(image_size=(64, 64), pretrained=False, dense_units=8, masked_pooling=True)
+    model = build_transfer_model(config)
+    backbone_grad_model, classifier_model = build_gradcam_models(model)
+    image = np.random.default_rng(0).uniform(0, 255, size=(64, 64, 3)).astype("float32")
+    mask = np.zeros((64, 64, 1), dtype=np.float32)
+    mask[:32, :, 0] = 255.0
+
+    heatmap, _ = compute_gradcam_heatmap(
+        image,
+        backbone_grad_model,
+        classifier_model,
+        mask_array=mask,
+    )
+    mask_at_heatmap_res = tf.image.resize(
+        mask[np.newaxis, ...], heatmap.shape, method="nearest"
+    ).numpy()[0, ..., 0]
+
+    assert np.all(heatmap[mask_at_heatmap_res <= 127] == 0.0)
+    assert np.max(heatmap) > 0.0
 
 
 def test_build_gradcam_models_wires_backbone_and_classifier_head() -> None:
