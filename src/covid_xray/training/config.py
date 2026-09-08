@@ -12,6 +12,12 @@ DEFAULT_BASELINE_IMAGE_SIZE: Tuple[int, int] = (64, 64)
 #   lungs      -> keep the lung field, zero out everything else
 #   background -> keep everything EXCEPT the lung field (the confound control)
 REGIONS: Tuple[str, ...] = ("full", "lungs", "background")
+CNN_REGIONS = (
+    "full",
+    "lungs",
+    "background",
+    "lung_roi",
+)
 DEFAULT_REGION = "full"
 
 @dataclass(frozen=True)
@@ -28,5 +34,5 @@ class BaselineConfig:
     mask_threshold: int = 127          # masks are 0/255 PNGs
 
     def __post_init__(self) -> None:
-        if self.region not in REGIONS:
+        if self.region not in CNN_REGIONS:
             raise ValueError(f"region must be one of {REGIONS}, got {self.region!r}")

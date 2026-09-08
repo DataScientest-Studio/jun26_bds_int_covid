@@ -64,3 +64,51 @@ def test_class_weights_are_inversely_proportional_to_frequency(manifest: pd.Data
 
     # COVID is now the majority class, so it must carry the smallest weight.
     assert min(present, key=present.get) == 0
+
+def test_intensity_mode_handles_mismatched_image_and_mask_shapes(
+    tmp_path,
+):
+    import numpy as np
+    import tensorflow as tf
+
+    from covid_xray.cnn.dataset import load_masked_image
+
+    image = np.ones(
+        (299, 299, 1),
+        dtype=np.uint8,
+    ) * 150
+
+    mask = np.zeros(
+        (256, 256, 1),
+        dtype=np.uint8,
+    )
+
+    mask[40:220, 30:105, 0] = 255
+    mask[40:220, 150:225, 0] = 255
+
+    image_path = tmp_path / "image.png"
+    mask_path = tmp_path / "mask.png"
+
+    tf.io.write_file(
+        str(image_path),
+        tf.io.encode_png(image),
+    )
+
+    tf.io.write_file(
+        str(mask_path),
+        tf.io.encode_png(mask),
+    )
+
+    result = load_masked_image(
+        image_path=tf.constant(str(image_path)),
+        mask_path=tf.constant(str(mask_path)),
+        image_size=(128, 128),
+        region="lungs",
+        mask_threshold=127,
+        lung_normalization="intensity",
+    )
+
+    result = result.numpy()
+
+    assert result.shape == (128, 128, 1)
+    assert np.isfinite(result).all()

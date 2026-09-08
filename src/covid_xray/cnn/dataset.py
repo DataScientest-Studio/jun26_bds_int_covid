@@ -15,7 +15,11 @@ from ..config import (
 )
 from ..preprocessing.manifest import Splits
 from .config import CNNConfig
-from .lung_normalization import normalize_lung_input
+from .lung_normalization import (
+    extract_lung_roi,
+    normalize_lung_input,
+    normalize_lung_intensity,
+)
 
 AUTOTUNE = tf.data.AUTOTUNE
 
@@ -32,37 +36,144 @@ def load_masked_image(
     mask_threshold: int,
     lung_normalization: str = "none",
 ) -> tf.Tensor:
-    """Load an X-ray and apply the requested image region."""
+    """Load an X-ray and apply the requested image region/normalization.
+
+    Experimental routing is intentionally explicit:
+
+    * ``none`` keeps the original lungs-only preprocessing unchanged.
+    * ``intensity`` performs the exact original resize+mask pipeline first,
+      then adds only per-image lung intensity normalization.
+    * ``geometry`` and ``both`` delegate to the geometry normalization
+      module because those modes intentionally change spatial preprocessing.
+    """
 
     raw = tf.io.read_file(image_path)
+    image = tf.io.decode_png(raw, channels=1)
 
-    image = tf.io.decode_png(
-        raw,
-        channels=1,
-    )
-
+    # Full-image baseline is unchanged.
     if region == "full":
         image = tf.image.resize(
             image,
             image_size,
             method="area",
         )
-
-        return tf.cast(
-            image,
-            tf.float32,
-        )
+        return tf.cast(image, tf.float32)
 
     mask_raw = tf.io.read_file(mask_path)
+    mask = tf.io.decode_png(mask_raw, channels=1)
 
-    mask = tf.io.decode_png(
-        mask_raw,
-        channels=1,
-    )
 
-    if region == "lungs" and lung_normalization != "none":
+    # ---------------------------------------------------------------
+    # LUNG ROI BASELINE
+    #
+    # The mask is used only to locate/crop the lung pair. No hard mask is
+    # applied, so the CNN sees original X-ray intensities inside the ROI.
+    # There is no rotation or intensity normalization.
+    # ---------------------------------------------------------------
+    if region == "lung_roi":
+        if lung_normalization != "none":
+            raise ValueError(
+                "lung_roi is a standalone input condition; "
+                "use lung_normalization='none'"
+            )
 
-        def _normalize(
+        def _extract_roi(
+            image_np: np.ndarray,
+            mask_np: np.ndarray,
+        ) -> np.ndarray:
+            return extract_lung_roi(
+                image=image_np,
+                mask=mask_np,
+                target_size=image_size,
+                mask_threshold=mask_threshold,
+            )
+
+        roi = tf.numpy_function(
+            func=_extract_roi,
+            inp=[image, mask],
+            Tout=tf.float32,
+        )
+
+        roi.set_shape(
+            (
+                image_size[0],
+                image_size[1],
+                1,
+            )
+        )
+
+        return roi
+
+    # ---------------------------------------------------------------
+    # INTENSITY-ONLY ABLATION
+    #
+    # Match the original lungs-only preprocessing exactly:
+    # image -> direct resize to target
+    # mask  -> direct resize to target
+    # apply lung mask
+    # then add only intensity normalization.
+    # ---------------------------------------------------------------
+    if region == "lungs" and lung_normalization == "intensity":
+        image = tf.image.resize(
+            image,
+            image_size,
+            method="area",
+        )
+        image = tf.cast(image, tf.float32)
+
+        mask = tf.image.resize(
+            mask,
+            image_size,
+            method="nearest",
+        )
+        mask = tf.cast(mask, tf.float32)
+
+        is_lung = mask > float(mask_threshold)
+
+        # Exactly the same masking step as the original lungs baseline.
+        image = image * tf.cast(is_lung, tf.float32)
+
+        def _normalize_intensity(
+            image_np: np.ndarray,
+            mask_np: np.ndarray,
+        ) -> np.ndarray:
+            image_2d = np.squeeze(image_np).astype(np.float32)
+            mask_2d = np.squeeze(mask_np)
+
+            normalized = normalize_lung_intensity(
+                image=image_2d,
+                mask=mask_2d,
+            )
+
+            return normalized[..., np.newaxis].astype(np.float32)
+
+        normalized = tf.numpy_function(
+            func=_normalize_intensity,
+            inp=[
+                image,
+                tf.cast(is_lung, tf.uint8),
+            ],
+            Tout=tf.float32,
+        )
+
+        normalized.set_shape(
+            (
+                image_size[0],
+                image_size[1],
+                1,
+            )
+        )
+
+        return normalized
+
+    # ---------------------------------------------------------------
+    # GEOMETRY / GEOMETRY+INTENSITY ABLATIONS
+    # ---------------------------------------------------------------
+    if (
+        region == "lungs"
+        and lung_normalization in {"geometry", "both"}
+    ):
+        def _normalize_geometry(
             image_np: np.ndarray,
             mask_np: np.ndarray,
         ) -> np.ndarray:
@@ -75,7 +186,7 @@ def load_masked_image(
             )
 
         normalized = tf.numpy_function(
-            func=_normalize,
+            func=_normalize_geometry,
             inp=[image, mask],
             Tout=tf.float32,
         )
@@ -90,34 +201,38 @@ def load_masked_image(
 
         return normalized
 
+    # ---------------------------------------------------------------
+    # ORIGINAL NONE / BACKGROUND PIPELINE
+    # ---------------------------------------------------------------
     image = tf.image.resize(
         image,
         image_size,
         method="area",
     )
-
-    image = tf.cast(
-        image,
-        tf.float32,
-    )
+    image = tf.cast(image, tf.float32)
 
     mask = tf.image.resize(
         mask,
         image_size,
         method="nearest",
     )
-
-    mask = tf.cast(
-        mask,
-        tf.float32,
-    )
+    mask = tf.cast(mask, tf.float32)
 
     is_lung = mask > float(mask_threshold)
 
     if region == "lungs":
+        if lung_normalization != "none":
+            raise ValueError(
+                "Unsupported lung normalization mode: "
+                f"{lung_normalization!r}"
+            )
         keep = is_lung
 
     elif region == "background":
+        if lung_normalization != "none":
+            raise ValueError(
+                "lung_normalization can only be used with region='lungs'"
+            )
         keep = tf.logical_not(is_lung)
 
     else:
@@ -129,6 +244,7 @@ def load_masked_image(
         keep,
         tf.float32,
     )
+
 
 
 def build_augmentation_pipeline(seed: int) -> keras.Sequential:

@@ -6,9 +6,9 @@ from typing import Sequence
 
 from ..config import CLASS_NAMES, MODELS_DIR, RANDOM_STATE, RAW_DIR
 from ..preprocessing.config import SplitConfig
-from ..training.config import REGIONS
 from .config import (
     ARCHITECTURES,
+    CNN_REGIONS,
     DEFAULT_ARCHITECTURE,
     DEFAULT_LENET_VARIANT,
     DEFAULT_REGION,
@@ -41,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--region",
-        choices=REGIONS,
+        choices=CNN_REGIONS,
         default=DEFAULT_REGION,
         help="Which pixels the network may see (default: full).",
     )

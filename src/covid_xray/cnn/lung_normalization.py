@@ -102,7 +102,7 @@ def rotate_pair(
 def crop_to_lungs(
     image: np.ndarray,
     mask: np.ndarray,
-    margin_fraction: float = 0.05,
+    margin_fraction: float = 0.08,
 ) -> tuple[np.ndarray, np.ndarray]:
     ys, xs = np.where(mask > 0)
 
@@ -300,66 +300,41 @@ def normalize_lung_input(
     mode: str,
     mask_threshold: int = 127,
 ) -> np.ndarray:
+    """Normalize lungs for geometry-based ablations.
 
-    image = np.squeeze(image).astype(np.float32)
-    mask = np.squeeze(mask)
+    Intensity-only normalization is intentionally routed from ``cnn/dataset.py``
+    after the exact original lungs resize+mask preprocessing. This function
+    therefore handles only:
 
-    # IMPORTANT:
-    # Put the original X-ray into the same coordinate frame
-    # as the segmentation mask before any masking operation.
-    image, mask = align_image_to_mask_frame(
-        image,
-        mask,
+    * ``geometry``: geometry normalization only.
+    * ``both``: geometry normalization followed by intensity normalization.
+    """
+
+    if mode not in {"geometry", "both"}:
+        raise ValueError(
+            "normalize_lung_input handles only 'geometry' and 'both'; "
+            f"got {mode!r}"
+        )
+
+    image, binary_mask, _ = geometry_normalize_pair(
+        image=image,
+        mask=mask,
+        target_size=target_size,
+        mask_threshold=mask_threshold,
     )
 
-    binary_mask = _binary_mask(
-        mask,
-        threshold=mask_threshold,
-    )
-
-    if mode in {"geometry", "both"}:
-
-        image, binary_mask, _ = geometry_normalize_pair(
-            image=image,
-            mask=mask,
-            target_size=target_size,
-            mask_threshold=mask_threshold,
-        )
-
-    else:
-        # Used by intensity-only mode.
-        #
-        # Image and mask are now guaranteed to have
-        # exactly the same dimensions.
-        image = (
-            image
-            * binary_mask.astype(np.float32)
-        )
-
-        image, binary_mask = resize_pair(
-            image,
-            binary_mask,
-            target_size=target_size,
-        )
-
-        image[
-            binary_mask == 0
-        ] = 0.0
-
-    if mode in {"intensity", "both"}:
+    if mode == "both":
         image = normalize_lung_intensity(
             image,
             binary_mask,
         )
 
     # Final safety mask.
-    image[
-        binary_mask == 0
-    ] = 0.0
+    image[binary_mask == 0] = 0.0
 
-    return image[
-        ..., np.newaxis
-    ].astype(np.float32)
+    return image[..., np.newaxis].astype(np.float32)
+
+
 
 def normalize_lung_geometry_pair(
     image: np.ndarray,
@@ -534,3 +509,228 @@ def keep_two_largest_components(
         cleaned[labels == label] = 1
 
     return cleaned
+
+def resize_mask_to_image_frame(
+    mask: np.ndarray,
+    image_shape: tuple[int, int],
+) -> np.ndarray:
+    """Resize a segmentation mask into the original X-ray pixel frame."""
+    mask = np.squeeze(mask)
+    image_h, image_w = image_shape
+
+    if mask.shape != (image_h, image_w):
+        mask = cv2.resize(
+            mask,
+            (image_w, image_h),
+            interpolation=cv2.INTER_NEAREST,
+        )
+
+    return mask
+
+
+def extract_lung_roi(
+    image: np.ndarray,
+    mask: np.ndarray,
+    target_size: Tuple[int, int] = (128, 128),
+    mask_threshold: int = 127,
+    margin_fraction: float = 0.05,
+) -> np.ndarray:
+    """Create an unmasked lung-ROI input from the original X-ray.
+
+    The mask is used ONLY to locate the lung pair. The output keeps the
+    original X-ray intensities inside a square ROI; it does not multiply the
+    image by the mask and therefore does not introduce a hard lung contour.
+
+    There is no rotation and no intensity normalization.
+    """
+    image = np.squeeze(image).astype(np.float32)
+    mask = resize_mask_to_image_frame(mask, image.shape)
+
+    binary_mask = _binary_mask(
+        mask,
+        threshold=mask_threshold,
+    )
+    binary_mask = keep_two_largest_components(binary_mask)
+
+    ys, xs = np.where(binary_mask > 0)
+
+    # Safe fallback for an empty/broken mask.
+    if len(xs) == 0 or len(ys) == 0:
+        output_size = (target_size[1], target_size[0])
+        resized = cv2.resize(
+            image,
+            output_size,
+            interpolation=cv2.INTER_AREA,
+        )
+        return resized[..., np.newaxis].astype(np.float32)
+
+    y_min = int(ys.min())
+    y_max = int(ys.max()) + 1
+    x_min = int(xs.min())
+    x_max = int(xs.max()) + 1
+
+    bbox_h = y_max - y_min
+    bbox_w = x_max - x_min
+
+    # Standardize overall lung-pair scale while preserving aspect ratio.
+    side = int(
+        np.ceil(
+            max(bbox_h, bbox_w)
+            * (1.0 + 2.0 * margin_fraction)
+        )
+    )
+    side = max(side, 1)
+
+    center_y = (y_min + y_max) / 2.0
+    center_x = (x_min + x_max) / 2.0
+
+    y1 = int(np.floor(center_y - side / 2.0))
+    x1 = int(np.floor(center_x - side / 2.0))
+    y2 = y1 + side
+    x2 = x1 + side
+
+    # Pad only when the desired square extends outside the original image.
+    # Median fill avoids a conspicuous hard black border.
+    image_h, image_w = image.shape
+
+    pad_top = max(0, -y1)
+    pad_left = max(0, -x1)
+    pad_bottom = max(0, y2 - image_h)
+    pad_right = max(0, x2 - image_w)
+
+    if any((pad_top, pad_bottom, pad_left, pad_right)):
+        fill_value = float(np.median(image))
+        image = cv2.copyMakeBorder(
+            image,
+            pad_top,
+            pad_bottom,
+            pad_left,
+            pad_right,
+            borderType=cv2.BORDER_CONSTANT,
+            value=fill_value,
+        )
+
+        y1 += pad_top
+        y2 += pad_top
+        x1 += pad_left
+        x2 += pad_left
+
+    roi = image[y1:y2, x1:x2]
+
+    output_size = (
+        target_size[1],
+        target_size[0],
+    )
+    roi = cv2.resize(
+        roi,
+        output_size,
+        interpolation=cv2.INTER_AREA,
+    )
+
+    return roi[..., np.newaxis].astype(np.float32)
+
+
+def extract_lung_roi_mask(
+    mask: np.ndarray,
+    image_shape: tuple[int, int],
+    target_size: Tuple[int, int] = (128, 128),
+    mask_threshold: int = 127,
+    margin_fraction: float = 0.05,
+) -> np.ndarray:
+    """Transform the lung mask into the same ROI frame used by the CNN."""
+
+    mask = resize_mask_to_image_frame(
+        mask,
+        image_shape,
+    )
+
+    binary_mask = _binary_mask(
+        mask,
+        threshold=mask_threshold,
+    )
+
+    binary_mask = keep_two_largest_components(
+        binary_mask
+    )
+
+    ys, xs = np.where(binary_mask > 0)
+
+    if len(xs) == 0 or len(ys) == 0:
+        return np.zeros(
+            target_size,
+            dtype=np.uint8,
+        )
+
+    y_min = int(ys.min())
+    y_max = int(ys.max()) + 1
+    x_min = int(xs.min())
+    x_max = int(xs.max()) + 1
+
+    bbox_h = y_max - y_min
+    bbox_w = x_max - x_min
+
+    side = int(
+        np.ceil(
+            max(bbox_h, bbox_w)
+            * (1.0 + 2.0 * margin_fraction)
+        )
+    )
+
+    side = max(side, 1)
+
+    center_y = (y_min + y_max) / 2.0
+    center_x = (x_min + x_max) / 2.0
+
+    y1 = int(np.floor(center_y - side / 2.0))
+    x1 = int(np.floor(center_x - side / 2.0))
+
+    y2 = y1 + side
+    x2 = x1 + side
+
+    image_h, image_w = image_shape
+
+    pad_top = max(0, -y1)
+    pad_left = max(0, -x1)
+    pad_bottom = max(0, y2 - image_h)
+    pad_right = max(0, x2 - image_w)
+
+    if any(
+        (
+            pad_top,
+            pad_bottom,
+            pad_left,
+            pad_right,
+        )
+    ):
+        binary_mask = cv2.copyMakeBorder(
+            binary_mask,
+            pad_top,
+            pad_bottom,
+            pad_left,
+            pad_right,
+            borderType=cv2.BORDER_CONSTANT,
+            value=0,
+        )
+
+        y1 += pad_top
+        y2 += pad_top
+        x1 += pad_left
+        x2 += pad_left
+
+    roi_mask = binary_mask[
+        y1:y2,
+        x1:x2,
+    ]
+
+    roi_mask = cv2.resize(
+        roi_mask,
+        (
+            target_size[1],
+            target_size[0],
+        ),
+        interpolation=cv2.INTER_NEAREST,
+    )
+
+    return (
+        roi_mask > 0
+    ).astype(np.uint8) * 255

@@ -17,6 +17,7 @@ from ..config import (
     RANDOM_STATE,
     RAW_DIR,
 )
+from .config import CNN_REGIONS
 from ..explainability.gradcam import gradcam_for_image
 from ..preprocessing.config import SplitConfig
 from ..preprocessing.manifest import split_manifest
@@ -26,7 +27,9 @@ from ..preprocessing.transforms import (
 )
 from ..training.data import build_raw_manifest
 from .dataset import load_masked_image
-
+from ..cnn.lung_normalization import (
+    extract_lung_roi_mask,
+)
 
 # ---------------------------------------------------------
 # Load image exactly as CNN saw it during training
@@ -310,6 +313,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--save-classwise",
+        action="store_true",
+        help=(
+            "Save a separate Grad-CAM figure "
+            "for each class."
+        ),
+    )
+
+    parser.add_argument(
+        "--classwise-output-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directory for class-specific "
+            "Grad-CAM figures."
+        ),
+    )
+    parser.add_argument(
         "--model-path",
         type=Path,
         required=True,
@@ -318,7 +339,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--region",
-        choices=("full", "lungs", "background"),
+        choices=CNN_REGIONS,
         default="full",
         help="Image region used during model training.",
     )
@@ -421,8 +442,26 @@ def evaluate_lung_attention(
         )
 
         mask = read_grayscale(mask_path)
-        mask = resize_mask(mask, image_size)
 
+        if region == "lung_roi":
+            original_image = read_grayscale(
+                image_path
+            )
+
+            mask = extract_lung_roi_mask(
+                mask=mask,
+                image_shape=np.squeeze(
+                    original_image
+                ).shape,
+                target_size=image_size,
+                mask_threshold=mask_threshold,
+            )
+
+        else:
+            mask = resize_mask(
+                mask,
+                image_size,
+            )
         result = gradcam_for_image(
             model=model,
             image_array=model_input,
@@ -571,8 +610,26 @@ def generate_representative_gradcam_figure(
         )
 
         mask = read_grayscale(mask_path)
-        mask = resize_mask(mask, image_size)
 
+        if region == "lung_roi":
+            original_image = read_grayscale(
+                image_path
+            )
+
+            mask = extract_lung_roi_mask(
+                mask=mask,
+                image_shape=np.squeeze(
+                    original_image
+                ).shape,
+                target_size=image_size,
+                mask_threshold=mask_threshold,
+            )
+
+        else:
+            mask = resize_mask(
+                mask,
+                image_size,
+            )
         result = gradcam_for_image(
             model=model,
             image_array=model_input,
@@ -666,6 +723,40 @@ def main() -> int:
         f"{len(test_frame)}"
     )
 
+# ---------------------------------------------------------
+# Optional: save one Grad-CAM figure per class
+# ---------------------------------------------------------
+
+    if args.save_classwise:
+
+        classwise_output_dir = (
+            args.classwise_output_dir
+            if args.classwise_output_dir is not None
+            else Path(
+                f"reports/cnn/"
+                f"{args.model_path.stem}_"
+                f"{args.region}_gradcam_classwise"
+            )
+        )
+
+        generate_classwise_gradcam_figures(
+            model=model,
+            frame=test_frame,
+            output_dir=classwise_output_dir,
+            image_size=tuple(args.image_size),
+            region=args.region,
+            mask_threshold=args.mask_threshold,
+            samples_per_class=args.samples_per_class,
+            random_state=args.seed,
+            target_layer=args.target_layer,
+        )
+
+        print(
+            f"\nSaved class-wise Grad-CAM figures to: "
+            f"{classwise_output_dir}"
+        )
+
+        return 0
     # Default output path
     if args.output is None:
 
@@ -830,6 +921,259 @@ def main() -> int:
     )
     return 0
 
+def generate_classwise_gradcam_figures(
+    model,
+    frame: pd.DataFrame,
+    output_dir: Path,
+    image_size: tuple[int, int],
+    region: str,
+    mask_threshold: int,
+    samples_per_class: int = 3,
+    random_state: int = 42,
+    target_layer: str | None = None,
+) -> list[Path]:
+    """
+    Save one Grad-CAM figure per class.
+
+    Each output figure contains:
+        samples_per_class rows
+        x
+        3 columns:
+            input
+            Grad-CAM heatmap
+            overlay
+
+    Example outputs:
+        gradcam_full_COVID.png
+        gradcam_full_Lung_Opacity.png
+        gradcam_full_Normal.png
+        gradcam_full_Viral_Pneumonia.png
+    """
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    saved_paths = []
+
+    class_names = [
+        "COVID",
+        "Lung_Opacity",
+        "Normal",
+        "Viral Pneumonia",
+    ]
+
+    for class_name in class_names:
+
+        class_frame = frame[
+            frame[CLASS_COLUMN] == class_name
+        ]
+
+        if class_frame.empty:
+            print(
+                f"No examples available for "
+                f"{class_name}"
+            )
+            continue
+
+        n_samples = min(
+            samples_per_class,
+            len(class_frame),
+        )
+
+        sample = class_frame.sample(
+            n=n_samples,
+            random_state=random_state,
+        )
+
+        fig, axes = plt.subplots(
+            n_samples,
+            3,
+            figsize=(10, 3.5 * n_samples),
+            squeeze=False,
+        )
+
+        for row_idx, (_, row) in enumerate(
+            sample.iterrows()
+        ):
+            image_path = str(
+                row[IMAGE_PATH_COLUMN]
+            )
+
+            mask_path = str(
+                row[MASK_PATH_COLUMN]
+            )
+
+            true_label = str(
+                row[CLASS_COLUMN]
+            )
+
+            # --------------------------------------------------
+            # Exact input seen by CNN
+            # --------------------------------------------------
+            model_input = load_cnn_gradcam_input(
+                image_path=image_path,
+                mask_path=mask_path,
+                image_size=image_size,
+                region=region,
+                mask_threshold=mask_threshold,
+            )
+
+            # --------------------------------------------------
+            # Lung mask in the SAME coordinate frame
+            # --------------------------------------------------
+            mask = read_grayscale(
+                mask_path
+            )
+
+            if region == "lung_roi":
+                original_image = read_grayscale(
+                    image_path
+                )
+
+                mask = extract_lung_roi_mask(
+                    mask=mask,
+                    image_shape=np.squeeze(
+                        original_image
+                    ).shape,
+                    target_size=image_size,
+                    mask_threshold=mask_threshold,
+                )
+
+            else:
+                mask = resize_mask(
+                    mask,
+                    image_size,
+                )
+
+            # --------------------------------------------------
+            # Grad-CAM
+            # --------------------------------------------------
+            result = gradcam_for_image(
+                model=model,
+                image_array=model_input,
+                mask=mask,
+                target_layer_name=target_layer,
+                mask_threshold=mask_threshold,
+            )
+
+            predicted_label = result[
+                "predicted_label"
+            ]
+
+            lung_fraction = result[
+                "lung_fraction"
+            ]
+
+            heatmap = result[
+                "heatmap"
+            ]
+
+            overlay = result[
+                "overlay"
+            ]
+
+            # --------------------------------------------------
+            # Column 1: actual CNN input
+            # --------------------------------------------------
+            axes[row_idx, 0].imshow(
+                np.squeeze(model_input),
+                cmap="gray",
+            )
+
+            axes[row_idx, 0].set_title(
+                f"Input ({region})\n"
+                f"True: {true_label}"
+            )
+
+            # --------------------------------------------------
+            # Column 2: Grad-CAM
+            # --------------------------------------------------
+            axes[row_idx, 1].imshow(
+                heatmap,
+                cmap="jet",
+                vmin=0,
+                vmax=1,
+            )
+
+            axes[row_idx, 1].set_title(
+                "Grad-CAM heatmap"
+            )
+
+            # --------------------------------------------------
+            # Column 3: overlay
+            # --------------------------------------------------
+            axes[row_idx, 2].imshow(
+                overlay
+            )
+
+            # Draw lung contour
+            axes[row_idx, 2].contour(
+                mask > mask_threshold,
+                levels=[0.5],
+            )
+
+            if (
+                lung_fraction is not None
+                and not np.isnan(lung_fraction)
+            ):
+                attention_text = (
+                    f"{lung_fraction * 100:.2f}%"
+                )
+            else:
+                attention_text = "N/A"
+
+            axes[row_idx, 2].set_title(
+                f"Pred: {predicted_label}\n"
+                f"Lung attention: "
+                f"{attention_text}"
+            )
+
+            for axis in axes[row_idx]:
+                axis.axis("off")
+
+        pretty_class_name = (
+            class_name
+            .replace(" ", "_")
+        )
+
+        output_path = (
+            output_dir
+            / (
+                f"gradcam_{region}_"
+                f"{pretty_class_name}.png"
+            )
+        )
+
+        fig.suptitle(
+            f"Grad-CAM — cnn_simple — "
+            f"region={region} — "
+            f"{class_name}",
+            fontsize=14,
+        )
+
+        fig.tight_layout(
+            rect=[0, 0, 1, 0.97]
+        )
+
+        fig.savefig(
+            output_path,
+            dpi=180,
+            bbox_inches="tight",
+        )
+
+        plt.close(fig)
+
+        saved_paths.append(
+            output_path
+        )
+
+        print(
+            f"Saved: {output_path}"
+        )
+
+    return saved_paths
 
 if __name__ == "__main__":
     raise SystemExit(main())

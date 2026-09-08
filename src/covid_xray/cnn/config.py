@@ -6,6 +6,11 @@ from typing import Tuple
 from ..config import RANDOM_STATE
 from ..training.config import REGIONS
 
+CNN_REGIONS: Tuple[str, ...] = (
+    *REGIONS,
+    "lung_roi",
+)
+
 # Architectures that can be trained from random initialization.
 #   scratch -> the VGG-style stack defined by `filters`
 #   lenet   -> LeNet-5, as a genuine low-capacity floor
@@ -45,6 +50,7 @@ DEFAULT_SIMPLE_FILTERS = (16, 32, 64)
 LENET_VARIANTS: Tuple[str, ...] = ("original", "modern")
 DEFAULT_LENET_VARIANT = "original"
 
+CNN_REGIONS = (*REGIONS, "lung_roi")
 
 @dataclass(frozen=True)
 class CNNConfig:
@@ -82,8 +88,8 @@ class CNNConfig:
             raise ValueError(
                 f"architecture must be one of {ARCHITECTURES}, got {self.architecture!r}"
             )
-        if self.region not in REGIONS:
-            raise ValueError(f"region must be one of {REGIONS}, got {self.region!r}")
+        if self.region not in CNN_REGIONS:
+            raise ValueError(f"region must be one of {CNN_REGIONS}, got {self.region!r}")
         if self.lenet_variant not in LENET_VARIANTS:
             raise ValueError(
                 f"lenet_variant must be one of {LENET_VARIANTS}, got {self.lenet_variant!r}"
