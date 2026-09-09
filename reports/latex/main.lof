@@ -1,0 +1,20 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Distribution of chest X-ray images across the four diagnostic classes.}}{4}{figure.caption.6}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Mean PNG file size of Viral Pneumonia images stratified by image encoding.}}{6}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Distribution of confirmed redundant exact duplicate files by diagnostic class after grouping duplicate sets.}}{7}{figure.caption.11}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Whole-image brightness and contrast distributions by diagnostic class.}}{8}{figure.caption.13}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Relationship between whole-image brightness and contrast by diagnostic class.}}{9}{figure.caption.14}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces End-to-end preprocessing workflow. CLAHE, lung masking, and augmentation were disabled in the baseline configuration but remain available for ablation studies.}}{12}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Per-image preprocessing stages on a representative COVID-19 chest X-ray: original grayscale image, resize to $224 \times 224$, CLAHE, lung masking, min--max normalization, and aligned segmentation mask.}}{15}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Individual augmentation operations on a representative COVID-19 chest X-ray: horizontal flip, rotation without zoom compensation, rotation with zoom compensation, and random zoom. Each row pairs the transformed image with its aligned lung mask.}}{17}{figure.caption.24}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Original COVID-19 chest X-ray and lung mask compared with one stochastic augmentation pass (fixed random seed for reproducibility).}}{18}{figure.caption.25}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Representative Grad-CAM examples for the full lung baseline, grouped by class.}}{24}{figure.caption.29}%
+\contentsline {figure}{\numberline {5.2}{\ignorespaces Class-wise examples of the lung-centred ROI preprocessing pipeline. }}{26}{figure.caption.30}%
+\contentsline {figure}{\numberline {5.3}{\ignorespaces Representative Grad-CAM visualisations for the lung-ROI baseline, grouped by class. Although the ROI reduces peripheral image content and avoids hard segmentation boundaries, model attention remains heterogeneous and is not restricted exclusively to the pulmonary parenchyma.}}{29}{figure.caption.34}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

@@ -1,0 +1,34 @@
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background and Motivation}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Problem Statement}{1}{section.1.2}%
+\contentsline {chapter}{\numberline {2}Dataset}{2}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Overview}{2}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Dataset Composition and Class Balance}{3}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Structural Integrity, Dimensions, and Image Encoding}{4}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}RGB Images in the Viral Pneumonia Class}{5}{subsection.2.3.1}%
+\contentsline {section}{\numberline {2.4}Exact Duplicate Analysis}{6}{section.2.4}%
+\contentsline {section}{\numberline {2.5}Whole-Image Brightness and Contrast}{7}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Statistical Testing}{9}{subsection.2.5.1}%
+\contentsline {section}{\numberline {2.6}Summary of Current Evidence}{10}{section.2.6}%
+\contentsline {chapter}{\numberline {3}Preprocessing}{12}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Design Rationale}{12}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Deduplication and Processed Dataset}{12}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Stratified Partitioning}{13}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Per-Image Transformation}{14}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Training-Time Augmentation}{15}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Verification and Reproducibility}{18}{section.3.6}%
+\contentsline {section}{\numberline {3.7}Implications for Model Development}{19}{section.3.7}%
+\contentsline {chapter}{\numberline {4}Methodology}{20}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Modelling}{21}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Baseline Models and Initial Explainability Analysis}{21}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Experimental Setup}{21}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Baseline 1: Full-Image Simple CNN}{22}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}Grad-CAM Analysis of the Full-Image Baseline}{23}{subsection.5.1.3}%
+\contentsline {subsection}{\numberline {5.1.4}Motivation for a Lung-Centred ROI Baseline}{24}{subsection.5.1.4}%
+\contentsline {subsection}{\numberline {5.1.5}Baseline 2: Lung-ROI Simple CNN}{25}{subsection.5.1.5}%
+\contentsline {subsection}{\numberline {5.1.6}Comparison of the Two Baselines}{27}{subsection.5.1.6}%
+\contentsline {subsection}{\numberline {5.1.7}Grad-CAM Analysis of the Lung-ROI Baseline}{28}{subsection.5.1.7}%
+\contentsline {subsection}{\numberline {5.1.8}Baseline Interpretation and Role in Subsequent Experiments}{29}{subsection.5.1.8}%
+\contentsline {chapter}{\numberline {6}Results}{31}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Discussion}{32}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Conclusion}{33}{chapter.8}%
