@@ -20,4 +20,5 @@ data/arrays/*
 .matplotlib/
 .ipynb_checkpoints/
 .DS_Store
-overleaf/
+overleaf/.texmf-local/
+.texmf-local/

@@ -23,5 +23,16 @@
 \contentsline {table}{\numberline {5.5}{\ignorespaces Comparison of the two principal simple-CNN baselines.}}{27}{table.caption.32}%
 \contentsline {table}{\numberline {5.6}{\ignorespaces Class-wise recall of the full-image and lung-ROI baselines.}}{27}{table.caption.33}%
 \addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces Test-set performance of the frozen EfficientNetB0 transfer model.}}{32}{table.caption.35}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Effect of horizontal flipping on the augmented transfer model (test split).}}{32}{table.caption.36}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Train-test generalisation gap for the frozen-backbone transfer models.}}{33}{table.caption.37}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Test-set performance of the fine-tuned EfficientNetB0 transfer model.}}{34}{table.caption.39}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Grad-CAM lung focus versus chance for the frozen transfer model.}}{37}{table.caption.42}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces Effect of masking the background at the input (causal test), test split.}}{38}{table.caption.44}%
+\contentsline {table}{\numberline {6.7}{\ignorespaces Grad-CAM lung focus versus chance for the masked transfer model.}}{38}{table.caption.45}%
+\contentsline {table}{\numberline {6.8}{\ignorespaces Decomposing accuracy into background, texture, and shape contributions (test split).}}{40}{table.caption.47}%
+\contentsline {table}{\numberline {6.9}{\ignorespaces Grad-CAM lung focus versus chance for the fine-tuned transfer model.}}{41}{table.caption.49}%
+\contentsline {table}{\numberline {6.10}{\ignorespaces Comparison of all principal models evaluated in this project (test split).}}{42}{table.caption.50}%
+\addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

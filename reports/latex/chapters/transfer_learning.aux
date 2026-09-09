@@ -1,0 +1,210 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Transfer Learning}{31}{chapter.6}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Transfer-Learning Approach and Experimental Setup}{31}{section.6.1}\protected@file@percent }
+\newlabel{sec:transfer_setup}{{6.1}{31}{Transfer-Learning Approach and Experimental Setup}{section.6.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Baseline Transfer Model}{31}{section.6.2}\protected@file@percent }
+\newlabel{sec:transfer_baseline}{{6.2}{31}{Baseline Transfer Model}{section.6.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.1}{\ignorespaces Test-set performance of the frozen EfficientNetB0 transfer model.}}{32}{table.caption.35}\protected@file@percent }
+\newlabel{tab:transfer_baseline_results}{{6.1}{32}{Test-set performance of the frozen EfficientNetB0 transfer model}{table.caption.35}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Optimisation: Augmentation, Class Weighting, and the Generalisation Gap}{32}{section.6.3}\protected@file@percent }
+\newlabel{sec:transfer_optimisation}{{6.3}{32}{Optimisation: Augmentation, Class Weighting, and the Generalisation Gap}{section.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}Data Augmentation and the Effect of Horizontal Flipping}{32}{subsection.6.3.1}\protected@file@percent }
+\newlabel{subsec:transfer_augmentation}{{6.3.1}{32}{Data Augmentation and the Effect of Horizontal Flipping}{subsection.6.3.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.2}{\ignorespaces Effect of horizontal flipping on the augmented transfer model (test split).}}{32}{table.caption.36}\protected@file@percent }
+\newlabel{tab:transfer_flip_comparison}{{6.2}{32}{Effect of horizontal flipping on the augmented transfer model (test split)}{table.caption.36}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}Class Weighting}{33}{subsection.6.3.2}\protected@file@percent }
+\newlabel{subsec:transfer_class_weighting}{{6.3.2}{33}{Class Weighting}{subsection.6.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}Generalisation Gap Across Runs}{33}{subsection.6.3.3}\protected@file@percent }
+\newlabel{subsec:transfer_generalisation_gap}{{6.3.3}{33}{Generalisation Gap Across Runs}{subsection.6.3.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.3}{\ignorespaces Train-test generalisation gap for the frozen-backbone transfer models.}}{33}{table.caption.37}\protected@file@percent }
+\newlabel{tab:transfer_generalisation_gap}{{6.3}{33}{Train-test generalisation gap for the frozen-backbone transfer models}{table.caption.37}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Advanced Modelling: Fine-Tuning the Backbone}{33}{section.6.4}\protected@file@percent }
+\newlabel{sec:transfer_finetune}{{6.4}{33}{Advanced Modelling: Fine-Tuning the Backbone}{section.6.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.1}{\ignorespaces Training and validation curves for the fine-tuned EfficientNetB0 model, showing the frozen-head phase followed by end-to-end fine-tuning.}}{34}{figure.caption.38}\protected@file@percent }
+\newlabel{fig:transfer_finetuned_history}{{6.1}{34}{Training and validation curves for the fine-tuned EfficientNetB0 model, showing the frozen-head phase followed by end-to-end fine-tuning}{figure.caption.38}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.4}{\ignorespaces Test-set performance of the fine-tuned EfficientNetB0 transfer model.}}{34}{table.caption.39}\protected@file@percent }
+\newlabel{tab:transfer_finetuned_results}{{6.4}{34}{Test-set performance of the fine-tuned EfficientNetB0 transfer model}{table.caption.39}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.2}{\ignorespaces Test-set confusion matrix for the fine-tuned EfficientNetB0 model.}}{34}{figure.caption.40}\protected@file@percent }
+\newlabel{fig:transfer_finetuned_confusion}{{6.2}{34}{Test-set confusion matrix for the fine-tuned EfficientNetB0 model}{figure.caption.40}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}Interpretability: Grad-CAM and the Lung-Focus Causal Analysis}{35}{section.6.5}\protected@file@percent }
+\newlabel{sec:transfer_interpretability}{{6.5}{35}{Interpretability: Grad-CAM and the Lung-Focus Causal Analysis}{section.6.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Qualitative and Quantitative Lung Focus of the Frozen Model}{35}{subsection.6.5.1}\protected@file@percent }
+\newlabel{subsec:transfer_lung_focus_baseline}{{6.5.1}{35}{Qualitative and Quantitative Lung Focus of the Frozen Model}{subsection.6.5.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.3}{\ignorespaces Representative Grad-CAM examples for the frozen transfer model, with the lung mask boundary overlaid in green.}}{36}{figure.caption.41}\protected@file@percent }
+\newlabel{fig:transfer_gradcam_baseline}{{6.3}{36}{Representative Grad-CAM examples for the frozen transfer model, with the lung mask boundary overlaid in green}{figure.caption.41}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.5}{\ignorespaces Grad-CAM lung focus versus chance for the frozen transfer model.}}{37}{table.caption.42}\protected@file@percent }
+\newlabel{tab:transfer_lung_focus_baseline}{{6.5}{37}{Grad-CAM lung focus versus chance for the frozen transfer model}{table.caption.42}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.4}{\ignorespaces Grad-CAM attention inside the lungs versus the chance level, by class, for the frozen transfer model.}}{37}{figure.caption.43}\protected@file@percent }
+\newlabel{fig:transfer_lung_focus_baseline}{{6.4}{37}{Grad-CAM attention inside the lungs versus the chance level, by class, for the frozen transfer model}{figure.caption.43}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}Causal Test: Masking the Input}{37}{subsection.6.5.2}\protected@file@percent }
+\newlabel{subsec:transfer_masking_causal}{{6.5.2}{37}{Causal Test: Masking the Input}{subsection.6.5.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.6}{\ignorespaces Effect of masking the background at the input (causal test), test split.}}{38}{table.caption.44}\protected@file@percent }
+\newlabel{tab:transfer_masked_causal}{{6.6}{38}{Effect of masking the background at the input (causal test), test split}{table.caption.44}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.7}{\ignorespaces Grad-CAM lung focus versus chance for the masked transfer model.}}{38}{table.caption.45}\protected@file@percent }
+\newlabel{tab:transfer_lung_focus_masked}{{6.7}{38}{Grad-CAM lung focus versus chance for the masked transfer model}{table.caption.45}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.5}{\ignorespaces Representative Grad-CAM examples for the masked transfer model, with the lung mask boundary overlaid in green. All model input outside the boundary was zeroed before training and inference.}}{39}{figure.caption.46}\protected@file@percent }
+\newlabel{fig:transfer_gradcam_masked}{{6.5}{39}{Representative Grad-CAM examples for the masked transfer model, with the lung mask boundary overlaid in green. All model input outside the boundary was zeroed before training and inference}{figure.caption.46}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.3}Isolating Shape: A Mask-Only Model}{40}{subsection.6.5.3}\protected@file@percent }
+\newlabel{subsec:transfer_mask_only}{{6.5.3}{40}{Isolating Shape: A Mask-Only Model}{subsection.6.5.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.8}{\ignorespaces Decomposing accuracy into background, texture, and shape contributions (test split).}}{40}{table.caption.47}\protected@file@percent }
+\newlabel{tab:transfer_mask_only}{{6.8}{40}{Decomposing accuracy into background, texture, and shape contributions (test split)}{table.caption.47}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.6}{\ignorespaces Test-set confusion matrix for the shape-only (mask-only) transfer model.}}{40}{figure.caption.48}\protected@file@percent }
+\newlabel{fig:transfer_mask_only_confusion}{{6.6}{40}{Test-set confusion matrix for the shape-only (mask-only) transfer model}{figure.caption.48}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.4}An Architectural Alternative: Masked Pooling}{41}{subsection.6.5.4}\protected@file@percent }
+\newlabel{subsec:transfer_masked_pooling}{{6.5.4}{41}{An Architectural Alternative: Masked Pooling}{subsection.6.5.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.5}Grad-CAM on the Fine-Tuned Model}{41}{subsection.6.5.5}\protected@file@percent }
+\newlabel{subsec:transfer_gradcam_finetuned}{{6.5.5}{41}{Grad-CAM on the Fine-Tuned Model}{subsection.6.5.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.9}{\ignorespaces Grad-CAM lung focus versus chance for the fine-tuned transfer model.}}{41}{table.caption.49}\protected@file@percent }
+\newlabel{tab:transfer_lung_focus_finetuned}{{6.9}{41}{Grad-CAM lung focus versus chance for the fine-tuned transfer model}{table.caption.49}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6.6}Comparison with the CNN-from-Scratch Baselines and Conclusions}{42}{section.6.6}\protected@file@percent }
+\newlabel{sec:transfer_comparison}{{6.6}{42}{Comparison with the CNN-from-Scratch Baselines and Conclusions}{section.6.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6.10}{\ignorespaces Comparison of all principal models evaluated in this project (test split).}}{42}{table.caption.50}\protected@file@percent }
+\newlabel{tab:transfer_full_comparison}{{6.10}{42}{Comparison of all principal models evaluated in this project (test split)}{table.caption.50}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6.7}{\ignorespaces Test accuracy and macro F1 across all EfficientNetB0 transfer-learning runs compared in this chapter.}}{42}{figure.caption.51}\protected@file@percent }
+\newlabel{fig:transfer_all_runs_comparison}{{6.7}{42}{Test accuracy and macro F1 across all EfficientNetB0 transfer-learning runs compared in this chapter}{figure.caption.51}{}}
+\@setckpt{chapters/transfer_learning}{
+\setcounter{page}{44}
+\setcounter{equation}{0}
+\setcounter{enumi}{2}
+\setcounter{enumii}{0}
+\setcounter{enumiii}{0}
+\setcounter{enumiv}{0}
+\setcounter{footnote}{0}
+\setcounter{mpfootnote}{0}
+\setcounter{part}{0}
+\setcounter{chapter}{6}
+\setcounter{section}{6}
+\setcounter{subsection}{0}
+\setcounter{subsubsection}{0}
+\setcounter{paragraph}{0}
+\setcounter{subparagraph}{0}
+\setcounter{figure}{7}
+\setcounter{table}{10}
+\setcounter{parentequation}{0}
+\setcounter{section@level}{1}
+\setcounter{Item}{16}
+\setcounter{Hfootnote}{0}
+\setcounter{bookmark@seq@number}{46}
+\setcounter{float@type}{4}
+\setcounter{caption@flags}{2}
+\setcounter{continuedfloat}{0}
+\setcounter{subfigure}{0}
+\setcounter{subtable}{0}
+\setcounter{tabx@nest}{0}
+\setcounter{listtotal}{0}
+\setcounter{listcount}{0}
+\setcounter{liststart}{0}
+\setcounter{liststop}{0}
+\setcounter{citecount}{0}
+\setcounter{citetotal}{0}
+\setcounter{multicitecount}{0}
+\setcounter{multicitetotal}{0}
+\setcounter{instcount}{0}
+\setcounter{maxnames}{2}
+\setcounter{minnames}{1}
+\setcounter{maxitems}{3}
+\setcounter{minitems}{1}
+\setcounter{citecounter}{0}
+\setcounter{maxcitecounter}{0}
+\setcounter{savedcitecounter}{0}
+\setcounter{uniquelist}{0}
+\setcounter{uniquename}{0}
+\setcounter{refsection}{0}
+\setcounter{refsegment}{0}
+\setcounter{maxextratitle}{0}
+\setcounter{maxextratitleyear}{0}
+\setcounter{maxextraname}{0}
+\setcounter{maxextradate}{0}
+\setcounter{maxextraalpha}{0}
+\setcounter{abbrvpenalty}{50}
+\setcounter{highnamepenalty}{50}
+\setcounter{lownamepenalty}{25}
+\setcounter{maxparens}{3}
+\setcounter{parenlevel}{0}
+\setcounter{blx@maxsection}{0}
+\setcounter{mincomprange}{10}
+\setcounter{maxcomprange}{100000}
+\setcounter{mincompwidth}{1}
+\setcounter{afterword}{0}
+\setcounter{savedafterword}{0}
+\setcounter{annotator}{0}
+\setcounter{savedannotator}{0}
+\setcounter{author}{0}
+\setcounter{savedauthor}{0}
+\setcounter{bookauthor}{0}
+\setcounter{savedbookauthor}{0}
+\setcounter{commentator}{0}
+\setcounter{savedcommentator}{0}
+\setcounter{editor}{0}
+\setcounter{savededitor}{0}
+\setcounter{editora}{0}
+\setcounter{savededitora}{0}
+\setcounter{editorb}{0}
+\setcounter{savededitorb}{0}
+\setcounter{editorc}{0}
+\setcounter{savededitorc}{0}
+\setcounter{foreword}{0}
+\setcounter{savedforeword}{0}
+\setcounter{holder}{0}
+\setcounter{savedholder}{0}
+\setcounter{introduction}{0}
+\setcounter{savedintroduction}{0}
+\setcounter{namea}{0}
+\setcounter{savednamea}{0}
+\setcounter{nameb}{0}
+\setcounter{savednameb}{0}
+\setcounter{namec}{0}
+\setcounter{savednamec}{0}
+\setcounter{translator}{0}
+\setcounter{savedtranslator}{0}
+\setcounter{shortauthor}{0}
+\setcounter{savedshortauthor}{0}
+\setcounter{shorteditor}{0}
+\setcounter{savedshorteditor}{0}
+\setcounter{labelname}{0}
+\setcounter{savedlabelname}{0}
+\setcounter{institution}{0}
+\setcounter{savedinstitution}{0}
+\setcounter{lista}{0}
+\setcounter{savedlista}{0}
+\setcounter{listb}{0}
+\setcounter{savedlistb}{0}
+\setcounter{listc}{0}
+\setcounter{savedlistc}{0}
+\setcounter{listd}{0}
+\setcounter{savedlistd}{0}
+\setcounter{liste}{0}
+\setcounter{savedliste}{0}
+\setcounter{listf}{0}
+\setcounter{savedlistf}{0}
+\setcounter{location}{0}
+\setcounter{savedlocation}{0}
+\setcounter{organization}{0}
+\setcounter{savedorganization}{0}
+\setcounter{origlocation}{0}
+\setcounter{savedoriglocation}{0}
+\setcounter{origpublisher}{0}
+\setcounter{savedorigpublisher}{0}
+\setcounter{publisher}{0}
+\setcounter{savedpublisher}{0}
+\setcounter{language}{0}
+\setcounter{savedlanguage}{0}
+\setcounter{origlanguage}{0}
+\setcounter{savedoriglanguage}{0}
+\setcounter{pageref}{0}
+\setcounter{savedpageref}{0}
+\setcounter{textcitecount}{0}
+\setcounter{textcitetotal}{0}
+\setcounter{textcitemaxnames}{0}
+\setcounter{biburlbigbreakpenalty}{100}
+\setcounter{biburlbreakpenalty}{200}
+\setcounter{biburlnumpenalty}{0}
+\setcounter{biburlucpenalty}{0}
+\setcounter{biburllcpenalty}{0}
+\setcounter{smartand}{1}
+\setcounter{bbx:relatedcount}{0}
+\setcounter{bbx:relatedtotal}{0}
+}

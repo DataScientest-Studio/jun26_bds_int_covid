@@ -16,5 +16,13 @@
 \contentsline {figure}{\numberline {5.2}{\ignorespaces Class-wise examples of the lung-centred ROI preprocessing pipeline. }}{26}{figure.caption.30}%
 \contentsline {figure}{\numberline {5.3}{\ignorespaces Representative Grad-CAM visualisations for the lung-ROI baseline, grouped by class. Although the ROI reduces peripheral image content and avoids hard segmentation boundaries, model attention remains heterogeneous and is not restricted exclusively to the pulmonary parenchyma.}}{29}{figure.caption.34}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Training and validation curves for the fine-tuned EfficientNetB0 model, showing the frozen-head phase followed by end-to-end fine-tuning.}}{34}{figure.caption.38}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Test-set confusion matrix for the fine-tuned EfficientNetB0 model.}}{34}{figure.caption.40}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces Representative Grad-CAM examples for the frozen transfer model, with the lung mask boundary overlaid in green.}}{36}{figure.caption.41}%
+\contentsline {figure}{\numberline {6.4}{\ignorespaces Grad-CAM attention inside the lungs versus the chance level, by class, for the frozen transfer model.}}{37}{figure.caption.43}%
+\contentsline {figure}{\numberline {6.5}{\ignorespaces Representative Grad-CAM examples for the masked transfer model, with the lung mask boundary overlaid in green. All model input outside the boundary was zeroed before training and inference.}}{39}{figure.caption.46}%
+\contentsline {figure}{\numberline {6.6}{\ignorespaces Test-set confusion matrix for the shape-only (mask-only) transfer model.}}{40}{figure.caption.48}%
+\contentsline {figure}{\numberline {6.7}{\ignorespaces Test accuracy and macro F1 across all EfficientNetB0 transfer-learning runs compared in this chapter.}}{42}{figure.caption.51}%
+\addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
