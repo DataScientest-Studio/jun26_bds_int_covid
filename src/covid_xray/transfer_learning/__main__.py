@@ -71,6 +71,20 @@ def build_parser() -> argparse.ArgumentParser:
             "anatomy such as chest X-rays."
         ),
     )
+    parser.add_argument(
+        "--lung-normalization",
+        choices=[
+            "none",
+            "intensity",
+            "geometry",
+            "both",
+        ],
+        default="none",
+        help=(
+            "Apply lung-based standardization before "
+            "transfer learning."
+        ),
+    )
     mask_group = parser.add_mutually_exclusive_group()
     mask_group.add_argument(
         "--mask-lungs",
@@ -282,12 +296,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             track_train_f1=args.track_train_f1,
             save_checkpoints=args.save_checkpoints,
             random_state=args.seed,
+            lung_normalization=args.lung_normalization,
         ),
         reports_dir=args.reports_dir,
         models_dir=args.models_dir,
         model_name=args.model_name,
         save=not args.dry_run,
         resume=args.resume,
+        verbose = 1,
     )
 
     print(format_transfer_report(result))

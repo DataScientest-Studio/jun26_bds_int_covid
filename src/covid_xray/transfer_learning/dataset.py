@@ -18,7 +18,10 @@ from ..config import (
 )
 from ..preprocessing.manifest import Splits
 from .config import TransferConfig
-
+from ..cnn.lung_normalization import (
+    normalize_lung_input,
+    normalize_lung_intensity,
+)
 AUTOTUNE = tf.data.AUTOTUNE
 
 
@@ -153,14 +156,164 @@ def load_mask_only(path: tf.Tensor, image_size: Tuple[int, int]) -> tf.Tensor:
     """
     return tf.image.grayscale_to_rgb(load_mask(path, image_size))
 
+def load_standardized_lung_image(
+    path: tf.Tensor,
+    mask_path: tf.Tensor,
+    image_size: Tuple[int, int],
+    mode: str,
+    mask_threshold: int,
+) -> tf.Tensor:
+    """Load a standardized lungs-only input for transfer learning.
 
+    Modes
+    -----
+    intensity:
+        Preserve the original hard-lung preprocessing:
+        resize image + mask -> hard mask -> intensity normalization.
+
+    geometry:
+        Geometry normalization only.
+
+    both:
+        Geometry normalization followed by intensity normalization.
+    """
+
+    raw_image = tf.io.read_file(path)
+    image = tf.io.decode_png(
+        raw_image,
+        channels=1,
+    )
+
+    raw_mask = tf.io.read_file(mask_path)
+    mask = tf.io.decode_png(
+        raw_mask,
+        channels=1,
+    )
+
+    # ---------------------------------------------------------
+    # INTENSITY ONLY
+    #
+    # Keep this identical to the original hard-lungs pipeline:
+    # resize image
+    # resize mask
+    # hard mask
+    # intensity normalization
+    # ---------------------------------------------------------
+    if mode == "intensity":
+        image = tf.image.resize(
+            image,
+            image_size,
+            method="area",
+        )
+        image = tf.cast(
+            image,
+            tf.float32,
+        )
+
+        mask = tf.image.resize(
+            mask,
+            image_size,
+            method="nearest",
+        )
+        mask = tf.cast(
+            mask,
+            tf.float32,
+        )
+
+        is_lung = mask > float(mask_threshold)
+
+        # Original hard-mask operation.
+        image = image * tf.cast(
+            is_lung,
+            tf.float32,
+        )
+
+        def _normalize_intensity(
+            image_np: np.ndarray,
+            mask_np: np.ndarray,
+        ) -> np.ndarray:
+            image_2d = np.squeeze(
+                image_np
+            ).astype(np.float32)
+
+            mask_2d = np.squeeze(mask_np)
+
+            normalized = normalize_lung_intensity(
+                image=image_2d,
+                mask=mask_2d,
+            )
+
+            return normalized[
+                ..., np.newaxis
+            ].astype(np.float32)
+
+        normalized = tf.numpy_function(
+            func=_normalize_intensity,
+            inp=[
+                image,
+                tf.cast(is_lung, tf.uint8),
+            ],
+            Tout=tf.float32,
+        )
+
+        normalized.set_shape(
+            (
+                image_size[0],
+                image_size[1],
+                1,
+            )
+        )
+
+        return tf.image.grayscale_to_rgb(
+            normalized
+        )
+
+    # ---------------------------------------------------------
+    # GEOMETRY / BOTH
+    # ---------------------------------------------------------
+    if mode in {"geometry", "both"}:
+
+        def _normalize_geometry(
+            image_np: np.ndarray,
+            mask_np: np.ndarray,
+        ) -> np.ndarray:
+            return normalize_lung_input(
+                image=image_np,
+                mask=mask_np,
+                target_size=image_size,
+                mode=mode,
+                mask_threshold=mask_threshold,
+            )
+
+        normalized = tf.numpy_function(
+            func=_normalize_geometry,
+            inp=[image, mask],
+            Tout=tf.float32,
+        )
+
+        normalized.set_shape(
+            (
+                image_size[0],
+                image_size[1],
+                1,
+            )
+        )
+
+        return tf.image.grayscale_to_rgb(
+            normalized
+        )
+
+    raise ValueError(
+        "Unsupported lung normalization mode: "
+        f"{mode!r}"
+    )
 def apply_lung_mask(image: tf.Tensor, mask: tf.Tensor, threshold: int) -> tf.Tensor:
     binary_mask = tf.cast(mask > threshold, image.dtype)
     return image * binary_mask
 
 
 def _needs_mask_paths(config: TransferConfig) -> bool:
-    return config.mask_lungs or config.mask_only or config.crop_lungs or config.masked_pooling
+    return config.mask_lungs or config.mask_only or config.crop_lungs or config.masked_pooling  or config.lung_normalization != "none"
 
 
 def _split_image_and_mask(combined: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -226,8 +379,24 @@ def build_dataset(
         dataset = dataset.shuffle(
             buffer_size=len(frame), seed=config.random_state, reshuffle_each_iteration=True
         )
+    if config.lung_normalization != "none":
 
-    if config.mask_only:
+        dataset = dataset.map(
+            lambda path, mask_path, label, needs_aug: (
+                load_standardized_lung_image(
+                    path,
+                    mask_path,
+                    config.image_size,
+                    config.lung_normalization,
+                    config.mask_threshold,
+                ),
+                label,
+                needs_aug,
+            ),
+            num_parallel_calls=AUTOTUNE,
+        )
+
+    elif config.mask_only:
         dataset = dataset.map(
             lambda path, mask_path, label, needs_aug: (
                 load_mask_only(mask_path, config.image_size),
@@ -293,7 +462,8 @@ def build_dataset(
         )
     dataset = dataset.batch(config.batch_size)
 
-    use_spatial_augment = config.crop_lungs and shuffle
+    #use_spatial_augment = config.crop_lungs and shuffle
+    use_spatial_augment = False  # Disable spatial augmentations for now, as they are not compatible with masked pooling
     if augment or bool(needs_augment.any()) or use_spatial_augment:
         translation = config.random_translation if (config.crop_lungs or augment) else 0.0
         zoom = config.random_zoom if (config.crop_lungs or augment) else 0.0

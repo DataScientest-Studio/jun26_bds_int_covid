@@ -45,6 +45,7 @@ class TransferConfig:
     track_train_f1: bool = False
     save_checkpoints: bool = True
     random_state: int = RANDOM_STATE
+    lung_normalization: str = "none"
 
     def __post_init__(self) -> None:
         if self.backbone not in BACKBONES:
@@ -89,4 +90,14 @@ class TransferConfig:
             raise ValueError(
                 "fine_tune_unfreeze_layers must be >= 0, got "
                 f"{self.fine_tune_unfreeze_layers}"
+            )
+        if self.lung_normalization not in {
+            "none",
+            "intensity",
+            "geometry",
+            "both",
+        }:
+            raise ValueError(
+                "lung_normalization must be one of "
+                "{'none', 'intensity', 'geometry', 'both'}"
             )

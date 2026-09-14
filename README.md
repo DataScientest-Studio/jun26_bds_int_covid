@@ -74,7 +74,7 @@ Processed outputs are written to `data/processed/`, which is also gitignored.
 Run it from the command line:
 
 ```bash
-covid-xray-preprocess --redundant-csv notebooks/redundant_images.csv
+covid-xray-preprocess --redundant-csv data/metadata/redundant_images.csv
 covid-xray-preprocess --skip-copy --clahe --augment --dry-run
 ```
 
