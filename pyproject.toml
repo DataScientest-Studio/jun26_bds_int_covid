@@ -21,6 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+app = ["streamlit>=1.60"]
 
 [project.scripts]
 covid-xray-preprocess = "covid_xray.preprocessing.__main__:main"
