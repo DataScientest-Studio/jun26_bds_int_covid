@@ -37,6 +37,13 @@ from .model import (
     build_transfer_model,
     prepare_for_fine_tuning,
 )
+from .lung_only import (
+    LungOnlyDatasetResult,
+    LungOnlyPreprocessConfig,
+    load_materialized_splits,
+    materialize_lung_only_dataset,
+    run_lung_only_training,
+)
 from .pipeline import (
     TransferResult,
     checkpoint_dir_for,
@@ -81,4 +88,9 @@ __all__ = [
     "TransferResult",
     "format_transfer_report",
     "run_transfer_learning",
+    "LungOnlyDatasetResult",
+    "LungOnlyPreprocessConfig",
+    "load_materialized_splits",
+    "materialize_lung_only_dataset",
+    "run_lung_only_training",
 ]

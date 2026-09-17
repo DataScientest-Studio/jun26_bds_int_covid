@@ -161,13 +161,17 @@ def run_transfer_learning(
     save: bool = True,
     resume: bool = False,
     verbose: int = 2,
+    prepared_splits: Optional[Splits] = None,
 ) -> TransferResult:
     reports_dir = Path(reports_dir)
     models_dir = Path(models_dir)
     model_name = model_name or default_model_name(config.backbone)
 
-    manifest = build_manifest(processed_dir=processed_dir, class_folders=class_folders)
-    splits = split_manifest(manifest, split_config)
+    if prepared_splits is None:
+        manifest = build_manifest(processed_dir=processed_dir, class_folders=class_folders)
+        splits = split_manifest(manifest, split_config)
+    else:
+        splits = prepared_splits
     if config.balance_classes:
         splits = replace(
             splits,

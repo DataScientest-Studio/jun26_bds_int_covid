@@ -152,6 +152,43 @@ print(format_transfer_report(result))
 
 Outputs go to `models/transfer_efficientnetb0.keras` (or `models/transfer_resnet50.keras`) and `reports/transfer_learning/` (metrics JSON and confusion matrix plots for train/val/test).
 
+### Materialized lungs-only EfficientNetB0 process
+
+For a training run in which no pixel outside the lung mask can affect the
+weights, use the dedicated materialized process:
+
+```bash
+covid-xray-train-lung-only --epochs 20 --batch-size 32
+```
+
+This process splits the original cases first (preventing augmented versions of
+one patient/image from crossing data splits), then writes the exact model inputs
+under `data/processed/lung_only_balanced/`:
+
+- every image is resized to 224x224 and all pixels outside its lung mask are set
+  to exactly zero;
+- validation and test retain their natural, untouched class distributions;
+- the training classes are made exactly equal in size by writing rotation-only
+  augmented copies of minority-class images (no horizontal flips);
+- `manifest.csv` records the train/validation/test membership of every saved
+  image and `preprocessing.json` records the seed, settings, and class counts;
+- EfficientNetB0 reads those saved PNGs directly, uses balanced class weights,
+  early stopping on validation loss, and the existing per-epoch checkpoint
+  layout under `models/checkpoints/<model-name>/`.
+
+To reuse already materialized images without processing them again:
+
+```bash
+covid-xray-train-lung-only --skip-prepare --epochs 20
+```
+
+Without reinstalling the editable package after pulling this change, the same
+command can be run as:
+
+```bash
+python -m covid_xray.transfer_learning.lung_only_cli --skip-prepare --epochs 20
+```
+
 ### Balancing classes: equal case counts via oversampling + augmentation
 
 By default the dataset is imbalanced (Normal and Lung_Opacity outnumber COVID and Viral Pneumonia). Two strategies address this, and they can be combined with `mask_lungs` to also remove all non-lung background pixels:
