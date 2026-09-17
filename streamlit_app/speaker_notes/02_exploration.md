@@ -22,6 +22,10 @@ The total percentage is small, only 0.28 percent, but duplicates can still cause
 
 Third, we compared brightness and contrast across the four classes. COVID images had the highest average brightness, while Normal images had the highest average contrast. These differences may partly come from acquisition or preprocessing rather than disease.
 
+*Open the Lung masks tab.*
+
+Finally, the average fraction of the image covered by the supplied lung masks also differs by class. That geometry may reflect source or annotation conventions, so we treated masks as experimental inputs rather than assuming they were neutral.
+
 The important point is that we did not treat these plots as interesting observations only. Each finding produced an action: standardize image encoding, remove duplicates before splitting, and later compare full-image models with lung-focused models to test whether global image characteristics were influencing predictions.
 
 ## What to emphasize
@@ -33,4 +37,3 @@ The important point is that we did not treat these plots as interesting observat
 ## Transition
 
 These exploration findings directly determined our preprocessing pipeline.
-

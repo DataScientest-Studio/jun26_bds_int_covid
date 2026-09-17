@@ -21,14 +21,14 @@ def configure_page() -> None:
     st.html(
         """
         <style>
-        .block-container {max-width: 1240px; padding-top: 2.2rem; padding-bottom: 3rem;}
+        .block-container {max-width: 1240px; padding-top: 4>rem; padding-bottom: 3rem;}
         h1 {letter-spacing: -0.035em;}
         h2, h3 {letter-spacing: -0.02em;}
         [data-testid="stMetric"] {min-width: 170px;}
         [data-testid="stImage"] img {border-radius: 12px;}
         .stCaption {color: #64708A;}
         @media (max-width: 640px) {
-            .block-container {padding-top: 1.2rem; padding-left: 1rem; padding-right: 1rem;}
+            .block-container {padding-top: 2.2rem; padding-left: 1rem; padding-right: 1rem;}
             h1 {font-size: 2rem !important;}
         }
         </style>
@@ -71,4 +71,3 @@ def figure(path: Path, caption: str) -> None:
 
 def footer(section: str) -> None:
     st.caption(f"{section} · Data Science Bootcamp final project · Berfin & Mert")
-

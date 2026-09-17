@@ -10,7 +10,7 @@ The first level was a dummy classifier and logistic regression. The dummy classi
 
 The second level used boosted trees. This provides a nonlinear classical machine-learning benchmark, but it still does not learn images in the same way as a convolutional network.
 
-The third level was convolutional neural networks trained from scratch. A CNN learns spatial filters such as edges, textures, and increasingly complex image patterns directly from our dataset. We tested both simple architectures and a deeper regularized CNN.
+The third level was a compact convolutional neural-network benchmark. It tested whether learned spatial filters add value beyond the classical models.
 
 The fourth level was transfer learning with EfficientNetB0. This network begins with visual features learned from ImageNet. We first froze the pretrained backbone and trained a new classification head. We then fine-tuned the network using a much smaller learning rate so that its features could adapt to chest X-rays without being destroyed by large updates.
 
@@ -18,13 +18,16 @@ All main comparisons used the same deduplicated, stratified data split. We evalu
 
 We also tested class weighting, balanced sampling, augmentation, lung masking, lung cropping, and background-only inputs. These were not simply attempts to increase one score. Some experiments were designed to understand the model and expose possible confounding information.
 
+*Open the Training evidence tab.*
+
+The three curves show loss, accuracy, and macro F1 during EfficientNet training. The visible reset marks the transition into fine-tuning, after which the metrics recover and continue improving.
+
 ## A simple explanation if asked
 
-- A CNN learns its filters from this dataset.
+- The compact CNN benchmark learns spatial filters directly from this dataset.
 - Transfer learning starts from filters learned previously on a very large image dataset.
 - Fine-tuning updates some or all of those pretrained filters using a low learning rate.
 
 ## Transition
 
 Now I will compare the held-out results and show which approach performed best.
-

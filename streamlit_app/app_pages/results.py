@@ -8,15 +8,15 @@ from lib.ui import figure, footer, narrative, page_intro
 
 page_intro(
     "05 · Results",
-    "The strongest model was trained from scratch",
+    "Fine-tuned EfficientNetB0 delivered the strongest presented result",
     "Current metrics are loaded from the saved evaluation artifacts, not copied from report text.",
 )
 
-best = test_summary("cnn/cnn_scratch_metrics.json")
+best = test_summary("transfer_learning/transfer_efficientnetb0_finetuned_metrics.json")
 narrative(
     "Find a model that performs consistently across all four classes on held-out data.",
     "Compared model families using the same test split and class-sensitive metrics.",
-    f"The scratch CNN leads with {best['accuracy']:.1%} accuracy and {best['macro_f1']:.1%} macro F1.",
+    f"Fine-tuned EfficientNetB0 reached {best['accuracy']:.1%} accuracy and {best['macro_f1']:.1%} macro F1.",
 )
 
 with st.container(horizontal=True):
@@ -48,9 +48,9 @@ with left:
         "Fine-tuned EfficientNetB0 test confusion matrix; Lung Opacity vs Normal remains the main ambiguity.",
     )
 with right:
-    st.markdown("#### Scratch CNN by class")
+    st.markdown("#### Fine-tuned EfficientNetB0 by class")
     st.dataframe(
-        class_metrics("cnn/cnn_scratch_metrics.json"),
+        class_metrics("transfer_learning/transfer_efficientnetb0_finetuned_metrics.json"),
         hide_index=True,
         column_config={
             "Precision": st.column_config.NumberColumn(format="percent"),
@@ -58,7 +58,6 @@ with right:
             "F1": st.column_config.NumberColumn(format="percent"),
         },
     )
-    st.caption("All values come from reports/cnn/cnn_scratch_metrics.json.")
+    st.caption("All values come from the saved fine-tuned EfficientNetB0 evaluation artifact.")
 
 footer("Results")
-

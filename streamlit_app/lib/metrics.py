@@ -27,7 +27,6 @@ def comparison_frame() -> pd.DataFrame:
     models = {
         "Logistic regression": "baseline/logistic_regression_metrics.json",
         "Simple CNN": "cnn/cnn_simple_metrics.json",
-        "CNN from scratch": "cnn/cnn_scratch_metrics.json",
         "EfficientNetB0": "transfer_learning/transfer_efficientnetb0_metrics.json",
         "Fine-tuned EfficientNetB0": "transfer_learning/transfer_efficientnetb0_finetuned_metrics.json",
     }
@@ -53,4 +52,3 @@ def class_metrics(relative_path: str) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
-

@@ -6,7 +6,7 @@ Run the app from the repository root:
 .venv/bin/streamlit run streamlit_app/streamlit_app.py
 ```
 
-The app presents the project in seven short sections followed by a live image-classification demo. Metrics are read from the saved JSON evaluation artifacts at render time. The demo exposes two curated models and generates a Grad-CAM overlay after each prediction.
+The app presents the project in seven short sections followed by a live image-classification demo. Metrics are read from the saved JSON evaluation artifacts at render time. The demo compares a Simple CNN, EfficientNetB0, and fine-tuned EfficientNetB0 across one or more uploaded images, with a Grad-CAM overlay for every prediction.
 
 See `PAGES.md` for the suggested 20-minute run of show.
 

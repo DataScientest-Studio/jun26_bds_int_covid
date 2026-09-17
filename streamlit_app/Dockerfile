@@ -19,13 +19,13 @@ COPY src ./src
 RUN pip install --upgrade pip \
     && pip install ".[app]"
 
-COPY models/cnn_scratch.keras \
+COPY models/cnn_simple.keras \
+     models/transfer_efficientnetb0.keras \
      models/transfer_efficientnetb0_finetuned.keras \
      ./models/
 
 COPY reports/baseline/logistic_regression_metrics.json ./reports/baseline/
 COPY reports/cnn/cnn_simple_metrics.json \
-     reports/cnn/cnn_scratch_metrics.json \
      ./reports/cnn/
 COPY reports/transfer_learning/transfer_efficientnetb0_metrics.json \
      reports/transfer_learning/transfer_efficientnetb0_finetuned_metrics.json \

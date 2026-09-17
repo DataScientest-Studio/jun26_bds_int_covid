@@ -16,7 +16,7 @@ narrative(
     "We found class-linked RGB encoding, 59 redundant images, and systematic intensity differences.",
 )
 
-tab1, tab2, tab3 = st.tabs(["Encoding", "Duplicates", "Intensity"])
+tab1, tab2, tab3, tab4 = st.tabs(["Encoding", "Duplicates", "Intensity", "Lung masks"])
 with tab1:
     left, right = st.columns([1.2, 1], gap="large", vertical_alignment="center")
     with left:
@@ -54,6 +54,21 @@ with tab3:
         st.write(
             "These global signals may reflect acquisition pipelines or backgrounds, motivating lung-focused ablations later."
         )
+with tab4:
+    left, right = st.columns([1.2, 1], gap="large", vertical_alignment="center")
+    with left:
+        figure(
+            FIGURES_DIR / "mean_lung_mask_area_ratio.png",
+            "Average lung-mask area differs by class, revealing another source-linked geometric signal.",
+        )
+    with right:
+        st.metric("Audit target", "Mask geometry", border=True)
+        st.write(
+            "Even the size and shape of the supplied lung masks vary systematically by class. This motivated region-based experiments rather than assuming every mask was a neutral preprocessing aid."
+        )
+        st.info(
+            "Labels may be encoded in acquisition and annotation patterns—not only in lung pathology.",
+            icon=":material/visibility:",
+        )
 
 footer("Exploration")
-

@@ -8,9 +8,9 @@ This chart compares representative models on the same held-out test set. The two
 
 The general pattern is clear. Logistic regression provides a useful baseline, but the image-specific deep-learning models perform substantially better. Transfer learning with EfficientNetB0 reached strong results, and fine-tuning improved it further.
 
-Our strongest current model is the CNN trained from scratch. It achieved 93.8 percent test accuracy and 94.7 percent macro F1. Its COVID recall was 98.7 percent. In simple terms, recall asks: among the images that truly belong to a class, how many did the model correctly identify?
+The strongest model presented here is the fine-tuned EfficientNetB0. It achieved 92.4 percent test accuracy and 93.6 percent macro F1. Its COVID recall was 97.8 percent. In simple terms, recall asks: among the images that truly belong to a class, how many did the model correctly identify?
 
-The class table shows that the scratch CNN performs strongly across all four classes, not only on the majority Normal class. That is why the macro F1 result is important. It confirms that performance is not being carried entirely by the largest category.
+The class table shows that fine-tuned EfficientNetB0 performs strongly across all four classes, not only on the majority Normal class. That is why the macro F1 result is important. It confirms that performance is not being carried entirely by the largest category.
 
 The confusion matrix shown here is for the fine-tuned EfficientNet model. A confusion matrix compares the true label with the predicted label. The diagonal contains correct predictions, while values outside the diagonal are errors. The remaining difficult distinction is mainly between Lung Opacity and Normal. This is understandable because opacity patterns can be subtle, and the Lung Opacity category is broad.
 
@@ -20,11 +20,10 @@ That second caution led to the most important part of our project: interpretabil
 
 ## What to point at
 
-- Point out the progression from logistic regression to the CNN models.
+- Point out the progression from logistic regression to EfficientNetB0 and its fine-tuned version.
 - Point to both accuracy and macro F1; explain why reporting both matters.
 - In the confusion matrix, explain the diagonal before discussing the mistakes.
 
 ## Transition
 
 The scores are strong, but we still need to ask whether the models succeeded for the right reason.
-

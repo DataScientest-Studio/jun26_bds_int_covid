@@ -16,7 +16,7 @@ st.write(
 with st.container(horizontal=True):
     st.badge("21,165 raw X-rays", icon=":material/image:", color="blue")
     st.badge("4 classes", icon=":material/category:", color="violet")
-    st.badge("93.8% best test accuracy", icon=":material/analytics:", color="green")
+    st.badge("92.4% best presented accuracy", icon=":material/analytics:", color="green")
     st.badge("Shortcut learning identified", icon=":material/warning:", color="orange")
 
 st.space("medium")
@@ -55,4 +55,3 @@ if REPORT_PDF.exists():
 
 disclaimer()
 footer("Opening")
-

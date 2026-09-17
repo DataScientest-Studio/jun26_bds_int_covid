@@ -18,7 +18,8 @@ from lib.paths import MODELS_DIR
 
 
 MODEL_OPTIONS = {
-    "CNN from scratch": MODELS_DIR / "cnn_scratch.keras",
+    "Simple CNN": MODELS_DIR / "cnn_simple.keras",
+    "EfficientNetB0": MODELS_DIR / "transfer_efficientnetb0.keras",
     "Fine-tuned EfficientNetB0": MODELS_DIR / "transfer_efficientnetb0_finetuned.keras",
 }
 
@@ -76,4 +77,3 @@ def predict_with_explanation(image: Image.Image, model_name: str) -> dict:
         "probabilities": probability_frame,
         "overlay": overlay,
     }
-

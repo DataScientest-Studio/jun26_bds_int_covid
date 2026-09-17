@@ -29,24 +29,39 @@ with st.container(horizontal=True, horizontal_alignment="distribute"):
 
 st.space("small")
 
-left, right = st.columns([1.25, 1], gap="large", vertical_alignment="center")
-with left:
-    figure(
-        FIGURES_DIR / "preprocessing_transform_steps.png",
-        "Representative transformations from raw X-ray to model-ready input.",
-    )
-with right:
-    st.markdown("#### Controlled choices")
-    st.markdown(
-        "- **Always:** duplicate removal, grayscale conversion, resizing, deterministic split.\n"
-        "- **Compared experimentally:** full image, lung ROI, lungs-only mask, and background-only regions.\n"
-        "- **Augmentation:** small rotations; horizontal flipping was removed after it reduced performance.\n"
-        "- **Reproducibility:** seed 42, saved manifests, versioned metrics, and tests."
-    )
-    st.info(
-        "Masks were resized with nearest-neighbor interpolation to preserve binary lung boundaries.",
-        icon=":material/check_circle:",
-    )
+tab1, tab2 = st.tabs(["Core transformations", "Paired augmentation"])
+with tab1:
+    left, right = st.columns([1.25, 1], gap="large", vertical_alignment="center")
+    with left:
+        figure(
+            FIGURES_DIR / "preprocessing_transform_steps.png",
+            "Representative transformations from raw X-ray to model-ready input.",
+        )
+    with right:
+        st.markdown("#### Controlled choices")
+        st.markdown(
+            "- **Always:** duplicate removal, grayscale conversion, resizing, deterministic split.\n"
+            "- **Compared experimentally:** full image, lung ROI, lungs-only mask, and background-only regions.\n"
+            "- **Augmentation:** small rotations; horizontal flipping was removed after it reduced performance.\n"
+            "- **Reproducibility:** seed 42, saved manifests, versioned metrics, and tests."
+        )
+        st.info(
+            "Masks were resized with nearest-neighbor interpolation to preserve binary lung boundaries.",
+            icon=":material/check_circle:",
+        )
+with tab2:
+    left, right = st.columns([1.25, 1], gap="large", vertical_alignment="center")
+    with left:
+        figure(
+            FIGURES_DIR / "preprocessing_augment_pair.png",
+            "The same rotation is applied to the X-ray and its lung mask so they remain aligned.",
+        )
+    with right:
+        st.markdown("#### Why paired transforms matter")
+        st.write(
+            "Applying different random transforms to an image and its mask would move the lung boundary away from the anatomy. The pipeline samples one transform and reuses it for both."
+        )
+        st.metric("Preferred augmentation", "Rotation only", border=True)
+        st.caption("Horizontal flipping was tested, then removed after validation performance declined.")
 
 footer("Preprocessing")
-

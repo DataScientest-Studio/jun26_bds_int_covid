@@ -16,14 +16,18 @@ Some choices were always applied, such as deduplication, grayscale conversion, a
 
 We also tested augmentation. Small rotations were useful as a controlled variation. Horizontal flipping reduced performance, probably because chest anatomy is not perfectly left-right interchangeable, so it was removed from the preferred augmentation setup.
 
+*Open the Paired augmentation tab.*
+
+This image shows that the same sampled rotation is applied to the X-ray and its mask. Keeping the pair aligned is essential; otherwise the mask would no longer describe the anatomy in the transformed image.
+
 The overall principle was simple: each transformation had to address a problem found during exploration, and experimental alternatives had to remain comparable.
 
 ## What to point at
 
 - Follow the pipeline badges from left to right.
 - Use the transformation figure to distinguish the original image, the mask, and the processed model input.
+- Open the augmentation tab to show that image and mask transforms stay synchronized.
 
 ## Transition
 
 Once the data pipeline was stable, we increased model complexity step by step.
-
