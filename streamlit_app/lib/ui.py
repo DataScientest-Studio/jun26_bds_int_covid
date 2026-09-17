@@ -21,7 +21,7 @@ def configure_page() -> None:
     st.html(
         """
         <style>
-        .block-container {max-width: 1240px; padding-top: 4>rem; padding-bottom: 3rem;}
+        .block-container {max-width: 1240px; padding-top: 4rem; padding-bottom: 3rem;}
         h1 {letter-spacing: -0.035em;}
         h2, h3 {letter-spacing: -0.02em;}
         [data-testid="stMetric"] {min-width: 170px;}
