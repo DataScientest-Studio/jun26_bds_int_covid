@@ -5,7 +5,7 @@ from lib.ui import figure, footer, narrative, page_intro
 
 
 page_intro(
-    "03 · Preprocessing",
+    "02 · Preprocessing",
     "Every transformation answers an observed data problem",
     "The pipeline is reproducible, conservative, and keeps experimental alternatives explicit.",
 )

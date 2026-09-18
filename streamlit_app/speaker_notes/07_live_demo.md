@@ -1,40 +1,47 @@
-# Live demo
+# Live demo — Mert
 
-Target time: 2 minutes 30 seconds
+Target: 2 minutes 30 seconds
 
 ## Before presenting
 
-- Keep one known frontal chest X-ray ready in an easy-to-find folder.
-- Run one prediction with each model before the defense so TensorFlow and the models are already initialized.
-- Use the fine-tuned EfficientNetB0 model shown in the presentation.
-- Keep a screenshot of a successful result as a fallback in case the live environment fails.
+- Visit the page once so the primary model enters the resource cache.
+- Keep **Prepared examples** open with **Lung Opacity · outside-lung attention example** selected.
+- Run it once before the jury arrives.
+- Keep a second browser tab on **Offline fallback**.
+- Do not use the upload path unless the jury asks.
 
-## Script before uploading
+## Full script
 
-This final page lets us choose between a Simple CNN, the original EfficientNetB0 transfer model, its fine-tuned version, and two modes for the materialized EfficientNetB0. The scan-only mode accepts the X-ray directly. The scan-and-mask mode also accepts a matching lung mask and reproduces the model's training-time background removal.
+“For the defense we use one primary model: fine-tuned EfficientNetB0. Four prepared examples—one per class—remove dependence on the file picker. I selected a known example where the Grad-CAM focus extends outside the lungs, because it demonstrates the limitation rather than hiding it.
 
-The uploaded image is converted to grayscale and resized to the input size expected by the selected model. The model then returns one probability for each of the four classes. These probabilities express the model's relative confidence across its available choices. They are not clinical probabilities and they do not express the chance that a patient has a disease.
+The model returns one score for each class. I will run a single prediction now.”
 
-*Select the model, upload the prepared images, and click Run predictions.*
+After the result:
 
-## Script after the result appears
+“The predicted class is [read label] with [read confidence]. The bar chart shows all four model outputs, which is more informative than only the winner. These are model-relative scores, not the probability that a patient has a disease.
 
-For each image, the model predicts **[say the displayed class]** with **[say the displayed confidence]** confidence.
+The Grad-CAM overlay shows influential regions. Warm colors do not identify a lesion, and attention outside the lungs is consistent with the shortcut-learning concern. The application works end to end, but it remains a non-clinical research prototype.”
 
-The bar chart is important because it shows all four outputs, not only the winning class. If two bars are close, the prediction is less decisive. If one bar is much larger, the model strongly prefers that class within these four choices.
+## Point at
 
-Below that, the Grad-CAM overlay shows the regions that most influenced this prediction. Warmer colors represent stronger influence. I would not interpret this as the location of a lesion. Grad-CAM is a coarse explanation of model behavior, and our earlier analysis showed that it can also highlight background regions.
+- The primary-model badge.
+- The predicted label.
+- All four probability bars.
+- The warm region outside the lungs.
+- The non-clinical warning.
 
-This demo shows that the complete batch pipeline works—from multi-image upload and preprocessing to inference and explanation. But the safety message remains the same: these are educational models evaluated on a public dataset, not medical diagnosis systems.
+## 30-second version
 
-## Closing statement
+“This cached fine-tuned model outputs all four scores and a coarse Grad-CAM explanation. The heatmap can focus outside the lungs, reinforcing the limitation. This is a working research demo, not a diagnostic tool.”
 
-To conclude, we built a strong four-class chest X-ray classifier, but the most valuable result was learning not to trust a high score without testing where it comes from. Our project combines performance with bias analysis, controlled experiments, and honest limitations. Thank you, and I am happy to answer your questions.
+## If live inference fails
 
-## If the demo is slow
-
-Say: “The first prediction loads the TensorFlow model into memory. Once loaded, the application caches it, so later predictions are faster.”
+Open **Offline fallback** and say: “The live runtime is unavailable, so I am using the pre-recorded successful result. The same three outputs are visible: predicted class, four scores, and Grad-CAM. The scientific interpretation is unchanged.”
 
 ## If the prediction is wrong
 
-Do not apologize or hide it. Say: “This is a useful example of why a single prediction and a high average test score should not be treated as clinical certainty. Let us look at the full probability distribution and the Grad-CAM region.”
+“This is exactly why one prediction and a high average score are not clinical certainty. The full score distribution and the shortcut analysis matter more than hiding a failure.”
+
+## Closing line
+
+“The pipeline works, but this output remains a research prototype—not a diagnosis. We are ready for your questions.”

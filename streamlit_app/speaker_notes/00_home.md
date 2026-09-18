@@ -1,21 +1,21 @@
-# Home
+# Home — Berfin
 
-Target time: 1 minute
+Target: 45 seconds
 
-## Script
+## Full script
 
-Hello, and thank you for being here. Our project is about classifying chest X-rays into four categories: COVID-19, Lung Opacity, Normal, and Viral Pneumonia.
+“Our project classifies chest X-rays into COVID, Lung Opacity, Normal, and Viral Pneumonia. The engineering result is strong: the retained raw-score winner reaches 92.4% test accuracy. But our main scientific question is on screen: did the model learn from the lungs, or from shortcuts tied to how the dataset was assembled? We will answer performance and trust separately. This is an educational prototype, not a clinically validated diagnostic system.”
 
-The technical goal was to build a strong image-classification model. But the more important question became the one shown here: if a model obtains a high score, can we trust that it learned from the lungs and from medically relevant patterns?
+## Point at
 
-We worked with 21,165 raw X-rays and tested several approaches, starting with simple machine-learning baselines and progressing to convolutional neural networks and transfer learning. The strongest model presented here, a fine-tuned EfficientNetB0, reached 92.4 percent test accuracy.
+- The research question.
+- “92.4% raw-score winner.”
+- “Shortcut learning identified.”
 
-However, we also found evidence of shortcut learning. This means that part of the model's performance came from technical or background information that was correlated with the class, rather than only from lung pathology.
+## 30-second version
 
-During this presentation, I will first explain the dataset and the risks we discovered. Then I will show the preprocessing pipeline, the models, their results, and the interpretability analysis. I will finish with a live prediction.
-
-It is important to state from the beginning that this is an educational research project. It is not a clinically validated diagnostic tool and should not be used for medical decisions.
+“We built a strong four-class classifier on lung X-rays, then tested whether its score came from medically relevant lung evidence. The result is useful but not clinically validated.”
 
 ## Transition
 
-I will begin with the dataset, because understanding how the data was collected is essential for understanding the model's results.
+“I will start with the data audit, because the structure of the dataset explains the rest of the project.”

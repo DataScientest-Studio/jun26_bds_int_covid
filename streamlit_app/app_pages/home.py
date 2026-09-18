@@ -6,42 +6,36 @@ from lib.ui import disclaimer, footer
 
 st.caption("DATA SCIENCE BOOTCAMP · FINAL PROJECT")
 st.title("COVID-19 chest X-ray classification")
-st.markdown(
-    "## Can a high-performing image classifier be trusted to learn from the lungs?"
-)
+st.markdown("### Four-class classification of lung X-ray images")
 st.write(
-    "A four-class computer-vision study spanning data exploration, preprocessing, classical machine learning, deep learning, transfer learning, and explainability."
+    "We study chest X-rays from the COVID-19 Radiography Database and ask whether a "
+    "high-performing image classifier learns from lung tissue or from dataset-specific shortcuts."
 )
 
-with st.container(horizontal=True):
-    st.badge("21,165 raw X-rays", icon=":material/image:", color="blue")
-    st.badge("4 classes", icon=":material/category:", color="violet")
-    st.badge("92.4% best presented accuracy", icon=":material/analytics:", color="green")
+with st.container(horizontal=True, gap="small"):
+    st.badge("21,165 chest X-rays", icon=":material/radiology:", color="blue")
+    st.badge("4 lung-image classes", icon=":material/category:", color="violet")
+    st.badge("92.4% raw-score winner", icon=":material/analytics:", color="green")
     st.badge("Shortcut learning identified", icon=":material/warning:", color="orange")
 
 st.space("medium")
 
-left, right = st.columns([1.3, 1], gap="large", vertical_alignment="center")
-with left:
-    with st.container(border=True):
-        st.subheader("The defense in one sentence")
-        st.write(
-            "We built increasingly capable models, then tested whether their performance came from clinically relevant lung information or from dataset-specific shortcuts."
-        )
-        st.markdown("**Authors:** Berfin & Mert  ")
-        st.markdown("**Project mentor:** Paul Grolier  ")
-        st.markdown("**Format:** 20-minute walkthrough + live prediction")
-with right:
-    st.markdown("#### Presentation route")
-    st.markdown(
-        "1. Dataset and question\n"
-        "2. Exploration and bias checks\n"
-        "3. Preprocessing\n"
-        "4. Model progression\n"
-        "5. Held-out results\n"
-        "6. Interpretability and limitations\n"
-        "7. Live demo"
+with st.container(border=True):
+    st.subheader("Project goal")
+    st.write(
+        "Train and evaluate models that separate COVID, Lung Opacity, Normal, and Viral "
+        "Pneumonia chest X-rays, then test whether strong internal accuracy reflects "
+        "medically relevant lung evidence."
     )
+    st.markdown(
+        "**Research question:** Can a high-performing classifier be trusted to learn from "
+        "the lungs—or from how the dataset was assembled?"
+    )
+
+with st.container(horizontal=True, gap="large"):
+    st.markdown("**Authors:** Berfin & Mert")
+    st.markdown("**Project mentor:** Paul Grolier")
+    st.markdown("**Format:** 20-minute walkthrough + live prediction")
 
 if REPORT_PDF.exists():
     with REPORT_PDF.open("rb") as report_file:
