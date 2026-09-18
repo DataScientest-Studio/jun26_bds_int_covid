@@ -1,13 +1,18 @@
 import streamlit as st
 
-from lib.demo import MODEL_OPTIONS, predict_with_explanation, read_uploaded_image
+from lib.demo import (
+    MODEL_OPTIONS,
+    predict_with_explanation,
+    read_uploaded_image,
+    requires_lung_mask,
+)
 from lib.ui import disclaimer, footer, page_intro
 
 
 page_intro(
     "07 · Live demo",
     "Test multiple chest X-rays, then inspect where the model looked",
-    "Compare three research models across a batch of images—the outputs are not diagnoses.",
+    "Compare five inference options across a batch of images—the outputs are not diagnoses.",
 )
 
 disclaimer()
@@ -32,6 +37,21 @@ with left:
         "For a meaningful demonstration, use a frontal chest X-ray with similar framing to the training collection."
     )
 
+    uploaded_mask_files = []
+    if requires_lung_mask(model_name):
+        st.info(
+            "This option applies the training-time lungs-only transform. Upload one matching lung mask per X-ray, in the same order.",
+            icon=":material/masks:",
+        )
+        uploaded_mask_files = st.file_uploader(
+            "Upload paired lung masks",
+            type=["png", "jpg", "jpeg"],
+            accept_multiple_files=True,
+            max_upload_size=20,
+            help="Masks are paired with X-rays by upload order and thresholded at 127.",
+            key="lung_masks",
+        )
+
     uploaded_images = []
     for uploaded_file in uploaded_files:
         try:
@@ -52,6 +72,23 @@ with left:
             width=140,
         )
 
+    uploaded_masks = []
+    for uploaded_mask_file in uploaded_mask_files:
+        try:
+            uploaded_masks.append(read_uploaded_image(uploaded_mask_file.getvalue()))
+        except ValueError as error:
+            st.error(f"{uploaded_mask_file.name}: {error}", icon=":material/error:")
+
+    masks_ready = not requires_lung_mask(model_name) or (
+        len(uploaded_masks) == len(uploaded_images)
+    )
+    if requires_lung_mask(model_name) and uploaded_images and not masks_ready:
+        st.warning(
+            f"Upload {len(uploaded_images)} readable lung mask{'s' if len(uploaded_images) != 1 else ''}; "
+            f"{len(uploaded_masks)} {'are' if len(uploaded_masks) != 1 else 'is'} ready.",
+            icon=":material/warning:",
+        )
+
 with right:
     if not uploaded_images:
         with st.container(border=True):
@@ -65,6 +102,12 @@ with right:
                 "- Probability for all four classes\n"
                 "- Grad-CAM overlay for a qualitative explanation"
             )
+    elif not masks_ready:
+        with st.container(border=True):
+            st.markdown("#### Paired masks required")
+            st.write(
+                "Add one lung segmentation mask for each uploaded X-ray. Files are paired by their upload order."
+            )
     elif st.button(
         f"Run {len(uploaded_images)} prediction{'s' if len(uploaded_images) != 1 else ''}",
         type="primary",
@@ -75,7 +118,14 @@ with right:
                 st.markdown(f"#### {index}. {item['name']}")
                 try:
                     with st.spinner(f"Running {model_name}..."):
-                        result = predict_with_explanation(item["image"], model_name)
+                        lung_mask = (
+                            uploaded_masks[index - 1]
+                            if requires_lung_mask(model_name)
+                            else None
+                        )
+                        result = predict_with_explanation(
+                            item["image"], model_name, lung_mask=lung_mask
+                        )
                     st.success(
                         f"Prediction: {result['label']} · confidence {result['confidence']:.1%}",
                         icon=":material/check_circle:",

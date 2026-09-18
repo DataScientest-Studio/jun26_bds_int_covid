@@ -12,17 +12,16 @@ page_intro(
 
 narrative(
     "Establish whether deep learning adds value beyond class frequency and raw-pixel patterns.",
-    "Compared dummy and linear baselines, gradient boosting, a compact CNN benchmark, and EfficientNetB0 transfer learning.",
+    "Compared dummy and linear baselines, a compact Simple CNN benchmark, and EfficientNetB0 transfer learning.",
     "Performance rose with learned spatial features, but model quality could not be judged from accuracy alone.",
 )
 
 st.markdown("#### Model progression")
-columns = st.columns(4, gap="small")
+columns = st.columns(3, gap="small")
 cards = [
     ("01", "Dummy + logistic", "A transparent floor and a raw-pixel linear baseline."),
-    ("02", "Boosted trees", "A nonlinear classical benchmark on compressed image features."),
-    ("03", "Simple CNN", "A compact benchmark for learned spatial features."),
-    ("04", "EfficientNetB0", "ImageNet transfer learning, then low-rate fine-tuning."),
+    ("02", "Simple CNN", "A compact benchmark for learned spatial features."),
+    ("03", "EfficientNetB0", "ImageNet transfer learning, then low-rate fine-tuning."),
 ]
 for column, (number, title, body) in zip(columns, cards):
     with column.container(border=True, height="stretch"):

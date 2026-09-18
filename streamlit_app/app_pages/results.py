@@ -37,7 +37,7 @@ chart = (
         yOffset="Metric:N",
         tooltip=["Model:N", "Metric:N", alt.Tooltip("Score:Q", format=".1%")],
     )
-    .properties(height=260)
+    .properties(height=300)
 )
 st.altair_chart(chart)
 

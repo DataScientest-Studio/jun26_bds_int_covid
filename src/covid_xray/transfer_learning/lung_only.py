@@ -22,7 +22,8 @@ from ..config import (
 from ..preprocessing.config import SplitConfig
 from ..preprocessing.manifest import Splits, build_manifest, missing_paths, split_manifest
 from .config import TransferConfig
-from .pipeline import TransferResult, run_transfer_learning
+from .history import best_checkpoint_path
+from .pipeline import TransferResult, checkpoint_dir_for, run_transfer_learning
 
 DEFAULT_OUTPUT_DIR = PROCESSED_DIR / "lung_only_balanced"
 DEFAULT_MODEL_NAME = "transfer_efficientnetb0_lung_only_materialized"
@@ -272,6 +273,7 @@ def run_lung_only_training(
     prepare: bool = True,
     save: bool = True,
     resume: bool = False,
+    fine_tune_from_best: bool = False,
     verbose: int = 2,
 ) -> Tuple[LungOnlyDatasetResult, TransferResult]:
     if prepare:
@@ -315,6 +317,18 @@ def run_lung_only_training(
         raise ValueError(
             "Images are already masked, rotated, and balanced; disable in-memory transforms"
         )
+    if fine_tune_from_best and not config.fine_tune:
+        raise ValueError("fine_tune_from_best requires fine_tune=True")
+
+    checkpoint_path = None
+    skip_phase1 = False
+    if fine_tune_from_best:
+        history_path = Path(reports_dir) / f"{model_name}_history.json"
+        checkpoint_path = best_checkpoint_path(
+            checkpoint_dir_for(models_dir, model_name),
+            history_path,
+        )
+        skip_phase1 = True
 
     trained = run_transfer_learning(
         config=config,
@@ -323,6 +337,8 @@ def run_lung_only_training(
         model_name=model_name,
         save=save,
         resume=resume,
+        checkpoint_path=checkpoint_path,
+        skip_phase1=skip_phase1,
         verbose=verbose,
         prepared_splits=prepared.splits,
     )

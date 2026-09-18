@@ -42,6 +42,44 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=RANDOM_STATE)
     parser.add_argument("--skip-prepare", action="store_true")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument(
+        "--fine-tune",
+        action="store_true",
+        help="Unfreeze the backbone and continue training at a lower learning rate.",
+    )
+    parser.add_argument(
+        "--fine-tune-from-best",
+        action="store_true",
+        help=(
+            "Load the checkpoint with the highest validation macro F1 and start "
+            "fine-tuning from there, skipping any further frozen-head training."
+        ),
+    )
+    parser.add_argument(
+        "--fine-tune-epochs",
+        type=int,
+        default=TransferConfig().fine_tune_epochs,
+    )
+    parser.add_argument(
+        "--fine-tune-learning-rate",
+        type=float,
+        default=TransferConfig().fine_tune_learning_rate,
+    )
+    parser.add_argument(
+        "--fine-tune-early-stopping-patience",
+        type=int,
+        default=TransferConfig().fine_tune_early_stopping_patience,
+    )
+    parser.add_argument(
+        "--fine-tune-unfreeze-layers",
+        type=int,
+        default=TransferConfig().fine_tune_unfreeze_layers,
+    )
+    parser.add_argument(
+        "--reduce-lr-on-plateau",
+        action=argparse.BooleanOptionalAction,
+        default=TransferConfig().reduce_lr_on_plateau,
+    )
     parser.add_argument("--no-pretrained", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser
@@ -49,6 +87,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.fine_tune_from_best and not args.fine_tune:
+        build_parser().error("--fine-tune-from-best requires --fine-tune")
     image_size = tuple(args.image_size)
     prepared, trained = run_lung_only_training(
         source_dir=args.source_dir,
@@ -75,6 +115,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             use_class_weight=True,
             mask_lungs=False,
             early_stopping_patience=args.early_stopping_patience,
+            fine_tune=args.fine_tune,
+            fine_tune_epochs=args.fine_tune_epochs,
+            fine_tune_learning_rate=args.fine_tune_learning_rate,
+            fine_tune_early_stopping_patience=args.fine_tune_early_stopping_patience,
+            fine_tune_unfreeze_layers=args.fine_tune_unfreeze_layers,
+            reduce_lr_on_plateau=args.reduce_lr_on_plateau,
             save_checkpoints=True,
             random_state=args.seed,
         ),
@@ -84,6 +130,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         prepare=not args.skip_prepare,
         save=not args.dry_run,
         resume=args.resume,
+        fine_tune_from_best=args.fine_tune_from_best,
         verbose=1,
     )
     print(f"Processed images: {prepared.output_dir}")

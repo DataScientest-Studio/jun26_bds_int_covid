@@ -22,6 +22,7 @@ RUN pip install --upgrade pip \
 COPY models/cnn_simple.keras \
      models/transfer_efficientnetb0.keras \
      models/transfer_efficientnetb0_finetuned.keras \
+     models/transfer_efficientnetb0_lung_only_materialized.keras \
      ./models/
 
 COPY reports/baseline/logistic_regression_metrics.json ./reports/baseline/
@@ -29,6 +30,7 @@ COPY reports/cnn/cnn_simple_metrics.json \
      ./reports/cnn/
 COPY reports/transfer_learning/transfer_efficientnetb0_metrics.json \
      reports/transfer_learning/transfer_efficientnetb0_finetuned_metrics.json \
+     reports/transfer_learning/transfer_efficientnetb0_lung_only_materialized_metrics.json \
      ./reports/transfer_learning/
 COPY reports/latex/figures ./reports/latex/figures/
 COPY reports/latex/main.pdf ./reports/latex/

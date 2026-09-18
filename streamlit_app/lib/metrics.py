@@ -29,6 +29,7 @@ def comparison_frame() -> pd.DataFrame:
         "Simple CNN": "cnn/cnn_simple_metrics.json",
         "EfficientNetB0": "transfer_learning/transfer_efficientnetb0_metrics.json",
         "Fine-tuned EfficientNetB0": "transfer_learning/transfer_efficientnetb0_finetuned_metrics.json",
+        "Materialized lungs-only EfficientNetB0": "transfer_learning/transfer_efficientnetb0_lung_only_materialized_metrics.json",
     }
     rows = []
     for name, path in models.items():

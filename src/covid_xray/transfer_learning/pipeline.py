@@ -160,12 +160,16 @@ def run_transfer_learning(
     model_name: Optional[str] = None,
     save: bool = True,
     resume: bool = False,
+    checkpoint_path: Optional[Path] = None,
+    skip_phase1: bool = False,
     verbose: int = 2,
     prepared_splits: Optional[Splits] = None,
 ) -> TransferResult:
     reports_dir = Path(reports_dir)
     models_dir = Path(models_dir)
     model_name = model_name or default_model_name(config.backbone)
+    if skip_phase1 and not config.fine_tune:
+        raise ValueError("skip_phase1 requires fine_tune=True")
 
     if prepared_splits is None:
         manifest = build_manifest(processed_dir=processed_dir, class_folders=class_folders)
@@ -182,17 +186,23 @@ def run_transfer_learning(
     tf.keras.utils.set_random_seed(config.random_state)
 
     checkpoints_dir = checkpoint_dir_for(models_dir, model_name)
+    history_path = reports_dir / f"{model_name}_history.json"
     initial_epoch = 0
     model = None
     previous_history: Dict[str, List[float]] = {}
-    if resume:
+    if checkpoint_path is not None:
+        model = tf.keras.models.load_model(
+            checkpoint_path, custom_objects=TRANSFER_CUSTOM_OBJECTS
+        )
+        if history_path.exists():
+            previous_history = load_history(history_path)
+    elif resume:
         latest_checkpoint = _latest_checkpoint(checkpoints_dir)
         if latest_checkpoint is not None:
             model = tf.keras.models.load_model(
                 latest_checkpoint, custom_objects=TRANSFER_CUSTOM_OBJECTS
             )
             initial_epoch = _epoch_from_checkpoint(latest_checkpoint)
-            history_path = reports_dir / f"{model_name}_history.json"
             if history_path.exists():
                 previous_history = load_history(history_path)
     if model is None:
@@ -202,28 +212,33 @@ def run_transfer_learning(
         compute_balanced_class_weights(splits.train) if config.use_class_weight else None
     )
 
-    phase1_callbacks, val_f1_callback, train_f1_callback = _build_callbacks(
-        config,
-        datasets,
-        checkpoints_dir,
-        save=save,
-        early_stopping_patience=config.early_stopping_patience,
-        include_reduce_lr=False,
-    )
-    history = _fit_and_collect_history(
-        model,
-        datasets,
-        config,
-        epochs=config.epochs,
-        initial_epoch=initial_epoch,
-        callbacks=phase1_callbacks,
-        val_f1_callback=val_f1_callback,
-        train_f1_callback=train_f1_callback,
-        class_weight=class_weight,
-        verbose=verbose,
-    )
-    if previous_history:
-        history = _merge_histories(previous_history, history)
+    if skip_phase1:
+        if not previous_history:
+            raise ValueError("skip_phase1 requires an existing history file")
+        history = dict(previous_history)
+    else:
+        phase1_callbacks, val_f1_callback, train_f1_callback = _build_callbacks(
+            config,
+            datasets,
+            checkpoints_dir,
+            save=save,
+            early_stopping_patience=config.early_stopping_patience,
+            include_reduce_lr=False,
+        )
+        history = _fit_and_collect_history(
+            model,
+            datasets,
+            config,
+            epochs=config.epochs,
+            initial_epoch=initial_epoch,
+            callbacks=phase1_callbacks,
+            val_f1_callback=val_f1_callback,
+            train_f1_callback=train_f1_callback,
+            class_weight=class_weight,
+            verbose=verbose,
+        )
+        if previous_history:
+            history = _merge_histories(previous_history, history)
 
     if config.fine_tune:
         phase1_completed_epochs = len(history.get("loss", []))

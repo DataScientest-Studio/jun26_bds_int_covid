@@ -25,6 +25,22 @@ def load_history(path: Path | str) -> HistoryDict:
     return json.loads(Path(path).read_text())
 
 
+def best_checkpoint_path(
+    checkpoints_dir: Path | str,
+    history_path: Path | str,
+    metric: str = "val_macro_f1",
+) -> Path:
+    history = load_history(history_path)
+    values = history.get(metric)
+    if not values:
+        raise ValueError(f"History has no {metric!r} values")
+    best_epoch = max(range(len(values)), key=lambda index: values[index]) + 1
+    checkpoint = Path(checkpoints_dir) / f"epoch_{best_epoch:04d}.keras"
+    if not checkpoint.exists():
+        raise FileNotFoundError(f"Best checkpoint not found: {checkpoint}")
+    return checkpoint
+
+
 def plot_training_history(
     history: Mapping[str, Sequence[float]],
     output_path: Path | str,

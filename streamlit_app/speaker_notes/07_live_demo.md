@@ -11,7 +11,7 @@ Target time: 2 minutes 30 seconds
 
 ## Script before uploading
 
-This final page lets us choose between a Simple CNN, the original EfficientNetB0 transfer model, and its fine-tuned version. We can upload several chest X-rays and process them together with the selected model.
+This final page lets us choose between a Simple CNN, the original EfficientNetB0 transfer model, its fine-tuned version, and two modes for the materialized EfficientNetB0. The scan-only mode accepts the X-ray directly. The scan-and-mask mode also accepts a matching lung mask and reproduces the model's training-time background removal.
 
 The uploaded image is converted to grayscale and resized to the input size expected by the selected model. The model then returns one probability for each of the four classes. These probabilities express the model's relative confidence across its available choices. They are not clinical probabilities and they do not express the chance that a patient has a disease.
 
