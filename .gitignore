@@ -28,3 +28,4 @@ models/checkpoints/
 models/**/epoch_*.keras
 models/*_ckpt.keras
 logs/
+models/*_epoch*.keras
