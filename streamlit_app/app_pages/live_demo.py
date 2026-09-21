@@ -7,7 +7,7 @@ from lib.demo import (
     preload_primary_model,
     read_uploaded_image,
 )
-from lib.paths import APP_ASSETS_DIR, DATA_DIR
+from lib.paths import APP_ASSETS_DIR, example_image
 from lib.ui import disclaimer, footer, page_intro
 
 
@@ -20,18 +20,12 @@ page_intro(
 disclaimer()
 
 prepared_examples = {
-    "COVID": DATA_DIR / "processed" / "COVID" / "images" / "COVID-1002.png",
-    "Lung Opacity · outside-lung attention example": DATA_DIR
-    / "processed"
-    / "Lung_Opacity"
-    / "images"
-    / "Lung_Opacity-100.png",
-    "Normal": DATA_DIR / "processed" / "Normal" / "images" / "Normal-1005.png",
-    "Viral Pneumonia": DATA_DIR
-    / "processed"
-    / "Viral Pneumonia"
-    / "images"
-    / "Viral Pneumonia-1003.png",
+    "COVID": example_image("COVID", "COVID-1002.png"),
+    "Lung Opacity · outside-lung attention example": example_image(
+        "Lung_Opacity", "Lung_Opacity-100.png"
+    ),
+    "Normal": example_image("Normal", "Normal-1005.png"),
+    "Viral Pneumonia": example_image("Viral Pneumonia", "Viral Pneumonia-1003.png"),
 }
 
 with st.container(horizontal=True):
@@ -55,9 +49,12 @@ with left:
     if source == "Prepared examples":
         example_name = st.selectbox("Prepared class example", list(prepared_examples))
         example_path = prepared_examples[example_name]
-        selected_image = Image.open(example_path).convert("L")
-        selected_name = example_path.name
-        st.image(selected_image, caption=f"{example_name} · {selected_name}")
+        if example_path.exists():
+            selected_image = Image.open(example_path).convert("L")
+            selected_name = example_path.name
+            st.image(selected_image, caption=f"{example_name} · {selected_name}")
+        else:
+            st.warning(f"Example image not found: {example_path.name}")
         if "outside-lung" in example_name:
             st.warning(
                 "This known example is useful for showing that Grad-CAM can concentrate away from the lungs.",

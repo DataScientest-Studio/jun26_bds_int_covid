@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-from lib.paths import DATA_DIR, FIGURES_DIR
+from lib.paths import FIGURES_DIR, example_image
 from lib.ui import figure, footer, narrative, page_intro
 
 
@@ -19,15 +19,14 @@ narrative(
 
 st.markdown("#### One representative X-ray per class")
 examples = [
-    ("COVID", DATA_DIR / "processed" / "COVID" / "images" / "COVID-1.png"),
-    ("Lung Opacity", DATA_DIR / "processed" / "Lung_Opacity" / "images" / "Lung_Opacity-1.png"),
-    ("Normal", DATA_DIR / "processed" / "Normal" / "images" / "Normal-1.png"),
-    ("Viral Pneumonia", DATA_DIR / "processed" / "Viral Pneumonia" / "images" / "Viral Pneumonia-1.png"),
+    ("COVID", example_image("COVID", "COVID-1.png")),
+    ("Lung Opacity", example_image("Lung_Opacity", "Lung_Opacity-1.png")),
+    ("Normal", example_image("Normal", "Normal-1.png")),
+    ("Viral Pneumonia", example_image("Viral Pneumonia", "Viral Pneumonia-1.png")),
 ]
 for column, (label, path) in zip(st.columns(4, gap="small"), examples):
     with column.container(border=True, height="stretch"):
-        st.image(str(path))
-        st.markdown(f"**{label}**")
+        figure(path, label)
 
 overview, evidence, geometry = st.tabs(
     ["Distribution & sources", "Three audit findings", "Supporting mask evidence"]

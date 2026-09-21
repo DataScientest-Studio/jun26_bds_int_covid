@@ -20,6 +20,6 @@ docker compose -f streamlit_app/docker-compose.yml up --build
 
 Open `http://localhost:8501`.
 
-For Dokploy, create a Compose application and point it at `streamlit_app/docker-compose.yml` in this repository. The build context is the repository root, so the image includes `src/`, the four demo models, report metrics, figures, and the PDF. Raw dataset files and training checkpoints are excluded via `.dockerignore`.
+For Dokploy, create a Compose application and point it at `streamlit_app/docker-compose.yml` in this repository. The build context is the repository root, so the image includes `src/`, the four demo models, report metrics, figures, the PDF, and bundled example X-rays in `streamlit_app/assets/examples/`. Raw dataset files and training checkpoints are excluded via `.dockerignore`.
 
 Recommended server resources: at least 2 GB RAM for TensorFlow model loading and inference.
