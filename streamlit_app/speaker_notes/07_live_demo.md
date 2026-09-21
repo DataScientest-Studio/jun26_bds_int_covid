@@ -12,15 +12,21 @@ Target: 2 minutes 30 seconds
 
 ## Full script
 
-“For the defense we use one primary model: fine-tuned EfficientNetB0. Four prepared examples—one per class—remove dependence on the file picker. I selected a known example where the Grad-CAM focus extends outside the lungs, because it demonstrates the limitation rather than hiding it.
+“For this demo, we’re using our fine-tuned EfficientNetB0—the same model we showed in the results.
 
-The model returns one score for each class. I will run a single prediction now.”
+We prepared one example from each class so the demo doesn’t depend on uploading a file. I’ve chosen this Lung Opacity image because we already know its Grad-CAM extends outside the lungs. It lets us show the limitation honestly instead of choosing only a perfect-looking example.
+
+The model will give us a score for all four classes. Let’s run it.”
 
 After the result:
 
-“The predicted class is [read label] with [read confidence]. The bar chart shows all four model outputs, which is more informative than only the winner. These are model-relative scores, not the probability that a patient has a disease.
+“The model predicts **[read label]**, with **[read confidence]** confidence.
 
-The Grad-CAM overlay shows influential regions. Warm colors do not identify a lesion, and attention outside the lungs is consistent with the shortcut-learning concern. The application works end to end, but it remains a non-clinical research prototype.”
+Here we can see the scores for all four classes. Showing all four gives us more information than only showing the top result. But these are model outputs—they are not the real probability that this patient has a disease.
+
+On the right is the Grad-CAM view. The warmer colors show the areas that influenced the prediction most. They do not show a lesion. And here, some of the attention is outside the lungs, which matches the shortcut concern we discussed earlier.
+
+So the full pipeline works, from image input to prediction and explanation. But it is still a research prototype, not a diagnostic system.”
 
 ## Point at
 
@@ -32,15 +38,15 @@ The Grad-CAM overlay shows influential regions. Warm colors do not identify a le
 
 ## 30-second version
 
-“This cached fine-tuned model outputs all four scores and a coarse Grad-CAM explanation. The heatmap can focus outside the lungs, reinforcing the limitation. This is a working research demo, not a diagnostic tool.”
+“This model gives us all four class scores and a Grad-CAM explanation. The heatmap can focus outside the lungs, which reinforces the limitation we found earlier. The demo works, but it is not a diagnostic tool.”
 
 ## If live inference fails
 
-Open **Offline fallback** and say: “The live runtime is unavailable, so I am using the pre-recorded successful result. The same three outputs are visible: predicted class, four scores, and Grad-CAM. The scientific interpretation is unchanged.”
+Open **Offline fallback** and say: “The live model isn’t available right now, so I’ll use the saved result. We can still see the same three outputs: the predicted class, all four scores, and the Grad-CAM view. The interpretation stays the same.”
 
 ## If the prediction is wrong
 
-“This is exactly why one prediction and a high average score are not clinical certainty. The full score distribution and the shortcut analysis matter more than hiding a failure.”
+“This is a useful example of why one prediction—and even a high average score—doesn’t give us clinical certainty. A wrong result is something we need to understand, not hide.”
 
 ## Closing line
 

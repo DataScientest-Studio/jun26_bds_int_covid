@@ -4,7 +4,11 @@ Target: 45 seconds
 
 ## Full script
 
-“Our project classifies chest X-rays into COVID, Lung Opacity, Normal, and Viral Pneumonia. The engineering result is strong: the retained raw-score winner reaches 92.4% test accuracy. But our main scientific question is on screen: did the model learn from the lungs, or from shortcuts tied to how the dataset was assembled? We will answer performance and trust separately. This is an educational prototype, not a clinically validated diagnostic system.”
+“Hi everyone. Our project is about classifying chest X-rays into four groups: COVID, Lung Opacity, Normal, and Viral Pneumonia.
+
+Our best model reached 92.4% accuracy, which sounds very promising. But a high score is only part of the story. The question we really wanted to answer was: is the model learning from the lungs, or is it picking up shortcuts from the way the dataset was collected?
+
+So today, we’ll look at performance and trust as two separate questions. And just to be clear from the start, this is a research prototype, not a clinical diagnostic tool.”
 
 ## Point at
 
@@ -14,8 +18,8 @@ Target: 45 seconds
 
 ## 30-second version
 
-“We built a strong four-class classifier on lung X-rays, then tested whether its score came from medically relevant lung evidence. The result is useful but not clinically validated.”
+“We built a model that classifies chest X-rays into four groups. It scored well, but we also tested whether it was learning from the lungs or from shortcuts in the dataset. The result is promising, but it is not clinically validated.”
 
 ## Transition
 
-“I will start with the data audit, because the structure of the dataset explains the rest of the project.”
+“I’ll start with the data audit, because the structure of the dataset explains almost everything that comes later.”

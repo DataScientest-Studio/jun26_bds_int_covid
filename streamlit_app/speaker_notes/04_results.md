@@ -4,11 +4,13 @@ Target: 2 minutes 15 seconds
 
 ## Full script
 
-“The retained raw-score winner is fine-tuned EfficientNetB0: 92.4% test accuracy, 93.6% macro F1, and 97.8% COVID recall. Macro F1 gives equal weight to all four classes, so the result is not carried only by the large Normal class.
+“Here is our best-performing model: the fine-tuned EfficientNetB0.
 
-This is the only confusion matrix we keep in the presentation. The diagonal shows correct predictions; the largest remaining ambiguity is between Lung Opacity and Normal. The adjacent table gives precision, recall, and F1 for each class.
+It reached 92.4% test accuracy, 93.6% macro F1, and 97.8% recall for COVID. Macro F1 is important here because it gives equal weight to all four classes. So the large Normal class is not carrying the result by itself.
 
-The box at the bottom is the transition. These metrics answer which retained model scores highest on this dataset split. They do not answer whether its evidence is clinically meaningful or stable across sources.”
+This confusion matrix shows where the predictions were correct and where the model still struggled. Most values are on the diagonal, which is what we want. The main confusion is between Lung Opacity and Normal. The table next to it gives the detailed score for each class.
+
+So, on this internal test set, the result is strong. But these numbers only tell us how well the model performed on this split. They don’t tell us what the model looked at, or whether it would work with images from a different hospital or source.”
 
 ## Point at
 
@@ -19,8 +21,8 @@ The box at the bottom is the transition. These metrics answer which retained mod
 
 ## 30-second version
 
-“Fine-tuned EfficientNetB0 wins with 92.4% accuracy and 93.6% macro F1. Its class-level results are strong, but this internal score cannot tell us what evidence the model used or whether it will survive a source shift.”
+“The fine-tuned EfficientNetB0 was our best model, with 92.4% accuracy and 93.6% macro F1. The scores are strong across the classes, but they still don’t tell us what the model learned or whether it would work on data from a new source.”
 
 ## Transition
 
-“That is why our next experiment asks whether the models succeeded for the right reason.”
+“So the next question is the most important one: did the model get the right answers for the right reasons?”

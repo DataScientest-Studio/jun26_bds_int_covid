@@ -4,13 +4,19 @@ Target: 2 minutes 15 seconds
 
 ## Full script
 
-“This table is the experiment map. Each row has one purpose. The dummy baseline sets a 48.3% majority-class floor. Logistic regression reaches 71.4%, showing that simple pixel statistics already carry signal. The Simple CNN reaches 82.0%, so learned spatial features add value.
+“This table gives us the full experiment story. Each row has a different job.
 
-Base EfficientNet reaches 87.1% using pretrained visual features. Fine-tuning raises that to 92.4%, the highest raw score among the models retained in this defense.
+We began with a dummy model. It simply predicts the largest class and gives us a baseline of 48.3% accuracy.
 
-The remaining rows ask a different question. Lung ROI and lungs-only inputs restrict access to background. Background, mask-only, and masked-pooling probes test whether non-lung pixels or mask geometry remain predictive. These are diagnostic experiments, not just leaderboard entries.
+Logistic regression reached 71.4%. That already tells us there is useful information in the pixels, even with a simple linear model. Then the Simple CNN reached 82%, showing that learned spatial features helped.
 
-Every main comparison uses the same deduplicated split and reports accuracy, macro F1, per-class recall, and confusion matrices.”
+Next, we moved to transfer learning. The base EfficientNet reached 87.1%, and after fine-tuning it reached 92.4%. That is our best raw score.
+
+From this point, the goal changes. We’re no longer just asking, ‘Can we improve the score?’ We’re asking, ‘Where is the score coming from?’
+
+So we tested lung crops, lungs-only images, background regions, masks, and masked pooling. These experiments help us check whether the model still finds useful signals outside the lungs.
+
+To keep the comparison fair, we used the same cleaned data split and the same evaluation approach throughout.”
 
 ## Point at
 
@@ -21,8 +27,8 @@ Every main comparison uses the same deduplicated split and reports accuracy, mac
 
 ## 30-second version
 
-“We moved from dummy and logistic baselines to a Simple CNN and EfficientNet. Fine-tuning produced the best retained raw score. ROI, lungs-only, background, mask-only, and masked-pooling variants then tested where the predictive signal came from.”
+“We started with simple baselines, then moved to a CNN and EfficientNet. Fine-tuning gave us the best score at 92.4%. After that, we used lung-only, background, mask, and other constrained versions to test where the model’s information was coming from.”
 
 ## Transition
 
-“First I will show the winner on the internal test split; then I will challenge whether that win is trustworthy.”
+“First, I’ll show how the winning model performed. Then we’ll look at whether we can actually trust that result.”

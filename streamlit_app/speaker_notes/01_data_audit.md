@@ -8,13 +8,23 @@ Keep **Distribution & sources** open. During the section, open **Three audit fin
 
 ## Full script
 
-“These are representative X-rays from the four target classes. The collection contains 21,165 images, but it is not balanced: Normal is almost half, while Viral Pneumonia is about 6%. That is why accuracy alone is not enough; later we report macro F1 and class recall.
+“Here we have one example from each of the four classes. In total, the dataset contains 21,165 images.
 
-The more important issue is the source table. Lung Opacity comes only from RSNA, Viral Pneumonia only from the Kaggle pneumonia source, Normal is mainly RSNA plus Kaggle, and COVID aggregates several repositories. Disease label and acquisition source therefore move together. A model can use scanner, border, compression, or preprocessing cues as a proxy for disease.
+The first thing we noticed was the class imbalance. Almost half of the images are Normal, while Viral Pneumonia makes up only around 6%. So later, we don’t rely on accuracy alone. We also look at macro F1 and recall for each class.
 
-We turned three audit findings into direct actions. First, all 140 RGB files belong to Viral Pneumonia, so every input is converted to grayscale. Second, we found 59 redundant files, concentrated in COVID, so duplicates are removed before any split. Third, brightness and contrast differ by class, so we later test lung-constrained inputs instead of assuming global intensity is pathology.
+But the bigger issue is where the images came from. Lung Opacity comes from one source, Viral Pneumonia comes from another, and the other two classes use a mix of sources. This means the disease label and the data source are connected.
 
-The supplied masks also differ geometrically by class. That is supporting evidence: masks can carry source or annotation conventions, so they are experimental tools—not guaranteed bias removal.”
+Why does that matter? The model might learn things like borders, scanner style, compression, or preprocessing—instead of learning only from the lungs.
+
+We found three practical problems and made one decision for each of them.
+
+First, all 140 RGB images were in the Viral Pneumonia class, so we converted every image to grayscale.
+
+Second, we found 59 duplicate or redundant files, mostly in the COVID class. We removed those before splitting the data.
+
+Third, brightness and contrast were different across the classes. That gave us another reason to test lung-focused versions of the images later.
+
+We also checked the lung masks. Their size and shape vary by class, so even a mask can carry information about the data source. That’s why we treat masking as an experiment, not as an automatic solution to bias.”
 
 ## Point at
 
@@ -25,8 +35,8 @@ The supplied masks also differ geometrically by class. That is supporting eviden
 
 ## 30-second version
 
-“The dataset is imbalanced and source-confounded. Three audit findings became actions: class-linked RGB encoding led to grayscale conversion, 59 duplicates led to pre-split deduplication, and intensity differences led to lung-constrained experiments. Mask geometry provided supporting evidence that masks are not automatically neutral.”
+“The dataset is imbalanced, and the classes are connected to different data sources. We converted all images to grayscale, removed 59 duplicates before the split, and used the brightness differences as a reason to test lung-focused inputs. We also found that the masks are not automatically free from source bias.”
 
 ## Transition
 
-“Those findings were not left as observations; they became the preprocessing pipeline.”
+“These findings directly shaped our preprocessing pipeline, which is what I’ll show next.”

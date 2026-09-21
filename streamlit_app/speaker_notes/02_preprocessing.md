@@ -4,9 +4,15 @@ Target: 1 minute 30 seconds
 
 ## Full script
 
-“We first removed 59 redundant files, leaving 21,106 images. Only then did we create the fixed, stratified 70/15/15 split with seed 42. Every image was converted to grayscale and resized. Masks used nearest-neighbor resizing so their binary boundaries stayed intact.
+“This is the full preprocessing pipeline.
 
-The full-image pipeline is the default comparison. Lung ROI, lungs-only, background-only, and other constrained inputs remain explicit experiments. Small rotations were retained; horizontal flipping was removed after it hurt validation performance. When an image and mask are augmented, the same transform is applied to both.”
+We started by removing the 59 redundant files, which left us with 21,106 images. Then we created a fixed 70-15-15 split for training, validation, and testing. We used a stratified split, so each part keeps a similar class balance.
+
+After that, every image was converted to grayscale and resized. We resized the masks with nearest-neighbor interpolation, so the mask boundaries stayed clean.
+
+The full image is our main input. The lung crop, lungs-only, and background-only versions are separate experiments, so we can compare them fairly.
+
+For augmentation, we kept small rotations. We also tested horizontal flips, but removed them because validation performance became worse. And whenever we rotate an image, we apply exactly the same rotation to its mask, so they stay aligned.”
 
 ## Point at
 
@@ -15,7 +21,7 @@ The full-image pipeline is the default comparison. Lung ROI, lungs-only, backgro
 
 ## 30-second version
 
-“We deduplicated before a fixed stratified split, standardized every image to grayscale, aligned masks safely, and kept region constraints as experiments. This made all later comparisons reproducible.”
+“We removed duplicates before making a fixed, stratified split. Then we converted the images to grayscale, resized the images and masks safely, and kept the lung-focused inputs as separate experiments. This gave us a consistent pipeline for every model comparison.”
 
 ## Handoff to Mert
 
