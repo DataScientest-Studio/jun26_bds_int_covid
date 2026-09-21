@@ -19,6 +19,7 @@ from ..config import (
 from ..preprocessing.manifest import Splits
 from .config import TransferConfig
 from ..cnn.lung_normalization import (
+    extract_lung_roi,
     normalize_lung_input,
     normalize_lung_intensity,
 )
@@ -307,13 +308,68 @@ def load_standardized_lung_image(
         "Unsupported lung normalization mode: "
         f"{mode!r}"
     )
-def apply_lung_mask(image: tf.Tensor, mask: tf.Tensor, threshold: int) -> tf.Tensor:
+def load_lung_roi_image(
+    path: tf.Tensor,
+    mask_path: tf.Tensor,
+    image_size: Tuple[int, int],
+    mask_threshold: int,
+    margin_fraction: float,
+) -> tf.Tensor:
+    """Square lung-ROI crop, identical to the CNN package's `lung_roi` region.
+
+    Delegates to cnn.lung_normalization.extract_lung_roi so that the transfer
+    models and the from-scratch CNNs see byte-identical inputs. This is NOT the
+    same as `crop_lungs`, which takes the raw rectangular bounding box: this
+    version forces a square crop around the bbox centre, keeps only the two
+    largest mask components, and pads with the image median rather than
+    clipping at the border. Those three differences remove per-image aspect
+    distortion, which is itself a source-correlated cue.
+
+    The image and mask are decoded at native resolution; extract_lung_roi does
+    its own mask alignment and final resize.
+    """
+    image = tf.io.decode_png(tf.io.read_file(path), channels=1)
+    mask = tf.io.decode_png(tf.io.read_file(mask_path), channels=1)
+
+    def _extract(image_np, mask_np):
+        return extract_lung_roi(
+            image=image_np,
+            mask=mask_np,
+            target_size=image_size,
+            mask_threshold=mask_threshold,
+            margin_fraction=margin_fraction,
+        )
+
+    roi = tf.numpy_function(func=_extract, inp=[image, mask], Tout=tf.float32)
+    roi.set_shape((image_size[0], image_size[1], 1))
+    return tf.image.grayscale_to_rgb(roi)
+
+
+def apply_lung_mask(
+    image: tf.Tensor, mask: tf.Tensor, threshold: int, invert: bool = False
+) -> tf.Tensor:
+    """Zero out everything outside the lung field, or inside it when inverted.
+
+    `invert=True` gives the exact complement: the non-lung pixels only. Pixels
+    are zeroed rather than removed, so both conditions produce tensors of the
+    same shape and a given pixel position means the same thing in each.
+    """
     binary_mask = tf.cast(mask > threshold, image.dtype)
+    if invert:
+        binary_mask = tf.cast(1, image.dtype) - binary_mask
     return image * binary_mask
 
 
 def _needs_mask_paths(config: TransferConfig) -> bool:
-    return config.mask_lungs or config.mask_only or config.crop_lungs or config.masked_pooling  or config.lung_normalization != "none"
+    return (
+        config.mask_lungs
+        or config.mask_background
+        or config.lung_roi
+        or config.mask_only
+        or config.crop_lungs
+        or config.masked_pooling
+        or config.lung_normalization != "none"
+    )
 
 
 def _split_image_and_mask(combined: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
@@ -396,6 +452,21 @@ def build_dataset(
             num_parallel_calls=AUTOTUNE,
         )
 
+    elif config.lung_roi:
+        dataset = dataset.map(
+            lambda path, mask_path, label, needs_aug: (
+                load_lung_roi_image(
+                    path,
+                    mask_path,
+                    config.image_size,
+                    config.mask_threshold,
+                    config.crop_margin_fraction,
+                ),
+                label,
+                needs_aug,
+            ),
+            num_parallel_calls=AUTOTUNE,
+        )
     elif config.mask_only:
         dataset = dataset.map(
             lambda path, mask_path, label, needs_aug: (
@@ -413,8 +484,9 @@ def build_dataset(
                         load_image(path, config.image_size),
                         load_mask(mask_path, config.image_size),
                         config.mask_threshold,
+                        invert=config.mask_background,
                     )
-                    if config.mask_lungs
+                    if (config.mask_lungs or config.mask_background)
                     else load_image(path, config.image_size),
                     load_mask(mask_path, config.image_size),
                 ),
@@ -423,13 +495,14 @@ def build_dataset(
             ),
             num_parallel_calls=AUTOTUNE,
         )
-    elif config.mask_lungs:
+    elif config.mask_lungs or config.mask_background:
         dataset = dataset.map(
             lambda path, mask_path, label, needs_aug: (
                 apply_lung_mask(
                     load_image(path, config.image_size),
                     load_mask(mask_path, config.image_size),
                     config.mask_threshold,
+                    invert=config.mask_background,
                 ),
                 label,
                 needs_aug,

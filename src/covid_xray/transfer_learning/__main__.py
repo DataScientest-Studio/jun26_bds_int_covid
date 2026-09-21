@@ -92,6 +92,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Zero out everything outside the lung mask before feeding images to the model.",
     )
     mask_group.add_argument(
+        "--mask-background",
+        action="store_true",
+        help=(
+            "Keep ONLY the non-lung pixels -- the exact complement of "
+            "--mask-lungs. This is the control condition: a model that scores "
+            "well here cannot be reading anatomy, because it never sees any."
+        ),
+    )
+    mask_group.add_argument(
+        "--lung-roi",
+        action="store_true",
+        help=(
+            "Square lung-ROI crop, identical to the CNN package's --region "
+            "lung_roi. Unlike --crop-lungs this forces a square crop, keeps "
+            "only the two largest mask components, and pads with the image "
+            "median. Use this to compare CNN and transfer models under one "
+            "ROI definition."
+        ),
+    )
+    mask_group.add_argument(
         "--mask-only",
         action="store_true",
         help=(
@@ -286,6 +306,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             balance_classes=args.balance_classes,
             use_class_weight=args.use_class_weight,
             mask_lungs=args.mask_lungs,
+            mask_background=args.mask_background,
+            lung_roi=args.lung_roi,
             mask_only=args.mask_only,
             crop_lungs=args.crop_lungs,
             crop_margin_fraction=args.crop_margin,

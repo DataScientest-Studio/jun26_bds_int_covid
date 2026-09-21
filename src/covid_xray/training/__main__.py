@@ -6,21 +6,10 @@ from typing import Sequence
 
 from ..config import CLASS_NAMES, MODELS_DIR, RANDOM_STATE, RAW_DIR
 from ..preprocessing.config import SplitConfig
-from .config import DEFAULT_BASELINE_IMAGE_SIZE, BaselineConfig
+from .config import DEFAULT_BASELINE_IMAGE_SIZE, BaselineConfig, CNN_REGIONS, DEFAULT_REGION
 from .models import build_baseline_models
 from .pipeline import BASELINE_REPORTS_DIR, format_baseline_report, run_baseline
-from .config import (
-    ARCHITECTURES,
-    CNN_REGIONS,
-    DEFAULT_ARCHITECTURE,
-    DEFAULT_LENET_VARIANT,
-    DEFAULT_LUNG_NORMALIZATION,
-    DEFAULT_REGION,
-    LENET_VARIANTS,
-    LUNG_NORMALIZATIONS,
-    CNNConfig,
-    default_image_size,
-)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(

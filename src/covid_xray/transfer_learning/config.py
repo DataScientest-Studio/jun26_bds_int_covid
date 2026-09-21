@@ -34,6 +34,13 @@ class TransferConfig:
     balance_classes: bool = False
     use_class_weight: bool = True
     mask_lungs: bool = False
+    # The exact complement of mask_lungs: keep only the non-lung pixels. This is
+    # the control condition -- a model that scores well here is not reading
+    # anatomy, because it never sees any.
+    mask_background: bool = False
+    # Square lung-ROI crop matching the CNN package's `lung_roi` region, so the
+    # two model families can be compared under one ROI definition.
+    lung_roi: bool = False
     mask_only: bool = False
     crop_lungs: bool = False
     masked_pooling: bool = False
@@ -52,9 +59,18 @@ class TransferConfig:
             raise ValueError(f"backbone must be one of {BACKBONES}, got {self.backbone!r}")
         if not 0 <= self.dropout_rate < 1:
             raise ValueError(f"dropout_rate must be in [0, 1), got {self.dropout_rate}")
-        mask_modes = int(self.mask_lungs) + int(self.mask_only) + int(self.crop_lungs)
+        mask_modes = (
+            int(self.mask_lungs)
+            + int(self.mask_background)
+            + int(self.mask_only)
+            + int(self.crop_lungs)
+            + int(self.lung_roi)
+        )
         if mask_modes > 1:
-            raise ValueError("mask_lungs, mask_only, and crop_lungs are mutually exclusive")
+            raise ValueError(
+                "mask_lungs, mask_background, mask_only, crop_lungs and lung_roi "
+                "are mutually exclusive"
+            )
         if self.masked_pooling and (self.mask_only or self.crop_lungs):
             raise ValueError(
                 "masked_pooling is incompatible with mask_only and crop_lungs"

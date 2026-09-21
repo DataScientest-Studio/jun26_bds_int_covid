@@ -22,3 +22,9 @@ data/arrays/*
 .DS_Store
 overleaf/.texmf-local/
 .texmf-local/
+.DS_Store
+*.zip
+models/checkpoints/
+models/**/epoch_*.keras
+models/*_ckpt.keras
+logs/
