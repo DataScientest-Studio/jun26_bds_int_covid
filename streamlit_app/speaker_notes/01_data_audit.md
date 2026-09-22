@@ -37,4 +37,4 @@ And fourth, brightness and contrast differ between classes.”
 
 ## Handoff to Mert
 
-“These findings shaped our preprocessing pipeline. Mert will now show how we turned those audit decisions into a reproducible pipeline.”
+“These findings shaped our preprocessing pipeline. Mert will now talk about the preprocessing steps we tried”
