@@ -1,6 +1,15 @@
 # jun26_bds_int_covid
 
-Image classification study on the COVID-19 Radiography Database. The goal of the project is to train and evaluate a model that separates COVID-19 chest X-rays from Normal, Viral Pneumonia, and Lung Opacity images. This is an educational decision-support study, not a clinically validated diagnostic system.
+Image classification study on the COVID-19 Radiography Database. We train
+convolutional networks to classify chest X-rays into four classes—COVID-19,
+Lung Opacity, Normal, and Viral Pneumonia—and test what those networks actually
+rely on. The best model reaches 0.936 macro F1, but region and resolution
+ablations show that a large share of this performance comes from
+source-related cues outside the lungs rather than from lung pathology.
+
+The full analysis is in the [project report](reports/ds_covid_report.pdf).
+
+This is an educational study, not a clinically validated diagnostic system.
 
 The work is organized as a pipeline of steps, each one a package under `src/covid_xray/`:
 

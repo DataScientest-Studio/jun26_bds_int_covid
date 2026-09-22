@@ -4,41 +4,54 @@ Target: 4 minutes
 
 ## Before speaking
 
-Keep **Matched intervention** open in a separate browser tab. Start on **Grad-CAM evidence**, move briefly to **What we tried**, and finish on **Matched intervention**.
+Start on **Grad-CAM evidence**, move briefly through **What we tried**, then spend most of the time on **Background vs lungs** and **Resolution**. Finish on **Limitations**. Everything is on one page—no second browser tab needed.
 
 ## Full script
 
 “To understand what the model was using, we first looked at Grad-CAM.
 
-In many images, the highlighted areas spread to the borders, shoulders, or background—not just the lungs. For Lung Opacity, the average focus inside the lungs was even below what we would expect by chance.
+In many images, the highlighted areas spread to the borders, shoulders, or background—not just the lungs. For our best model on COVID images, 24.3% of the attention falls inside the lungs, while the lungs cover 24.4% of the image. In other words, it looks at the lungs no more than chance would predict.
 
-That was a warning sign, but it wasn’t proof. Grad-CAM is only a rough map of which areas influenced a prediction. It cannot show us a lesion, and it cannot prove cause and effect.
+That was a warning sign, but not proof. Grad-CAM is only a rough map; it cannot prove cause and effect. So we intervened.
 
-So we went further. We tested lung crops, pixel masks, lungs-only images, mask-only images, background regions, and masked pooling. Each experiment removed or restricted a different part of the image.
+*(Open **What we tried**.)*
 
-None of these tests showed that the shortcut was completely gone. A crop can still keep the original framing, and a mask can still carry patterns from the source or annotation process.
+We tested lung crops, pixel masks, lungs-only images, mask-only images, and masked pooling. The clearest result is at the top of the page. When we kept only the lungs and blacked out everything else, COVID recall fell from 90.3% to 57%—a drop of 33 points, far more than for any other class.
 
-The clearest result came from this matched comparison. We kept the EfficientNet architecture, data split, and random seed the same. The main change was removing the pixels outside the lungs.
+*(Open **Background vs lungs**.)*
 
-When we did that, COVID recall dropped from 90.3% to 57%. That is a fall of 33.3 percentage points, and it was much larger than the change for the other classes.
+That experiment removed the background. So we also ran the reverse: we blacked out the lungs and kept everything else. If the model were really reading lung disease, this version should do badly—it can’t see a single lung pixel.
 
-This gives us evidence that the full-image model was using COVID-related information from outside the lungs.
+We trained each model three ways: on the full image, on the lungs only, and on the background only. The scores here are macro F1. In every architecture—from a small network trained from scratch to the pretrained EfficientNet—the background-only model beats the lungs-only model. For EfficientNet, the model that never sees the lungs scores 0.876; the model that sees only the lungs scores 0.823. Removing the lungs costs just 0.03 compared with the full image.
 
-But we need to phrase that carefully. It does not mean the model used only the background. The lungs-only model still performed reasonably well. The model seems to use a mixture of real lung information and shortcut information.
+*(Open **Resolution**.)*
 
-And one final distinction: the 92.4% model on the previous page is our best raw-score model. This matched comparison is a separate experiment designed to test the effect of removing the background. They answer two different questions.”
+Next, we checked whether the model needs detail. We shrank the images to 16 by 16 pixels, where the lungs are about 8 by 8 pixels—far too small to show any disease pattern. Macro F1 did not drop: 0.835, against 0.791 at full resolution. And at 16 by 16 with the lungs blacked out, it still reaches 0.787. For COVID the gap is clearest: an F1 of 0.67 from the background, but only 0.53 from the lungs.
+
+This connects straight back to the data audit. COVID images come from COVID-only repositories, so recognising the source is enough to recognise COVID.
+
+*(Open **Limitations**.)*
+
+We need to phrase this carefully. It does not mean the model uses only the background—lungs-only models still perform well above chance. It means a large share of the score comes from source-related cues. And our study has limits: we had no data from new hospitals, each experiment was run once, the masks themselves come from a model, and memory limits meant the background test used a frozen backbone.”
 
 ## Point at
 
 - Borders and shoulders in the Grad-CAM panel.
-- The five attempted interventions.
-- 90.3%, 57.0%, and −33.3 points.
+- 90.3% → 57.0% in the metrics at the top.
+- The Background and Lungs columns, then the Bg − Lungs column: positive in every row.
+- The three 16 × 16 metrics.
 - The warning about careful wording.
 
 ## 30-second version
 
-“Grad-CAM suggested that the model was looking outside the lungs, so we tested several restricted versions of the input. In the cleanest comparison, removing the background reduced COVID recall from 90.3% to 57%. That is strong evidence of shortcut learning, but it does not mean the model uses only the background.”
+“Grad-CAM showed attention spreading outside the lungs, so we tested it. Keeping only the lungs cut COVID recall from 90% to 57%. Then we did the reverse—blacked out the lungs—and in every model, the background alone beat the lungs alone. Performance even survived 16 × 16 images. That is strong evidence of shortcut learning—not proof that the lungs carry no signal.”
+
+## If asked
+
+- **Why does the table show 0.907 for EfficientNet, not 0.936?** The region comparison uses the frozen-backbone model, so all three conditions are trained identically. Fine-tuning the full backbone ran out of memory on our hardware.
+- **Doesn’t masked pooling solve it?** It kept most of the performance, but deep features over the lungs still summarise most of the image. It may hide the shortcut rather than remove it.
+- **How can macro F1 stay at 0.823 when COVID recall is only 57%?** Macro F1 averages all four classes. COVID drops sharply, but the other three barely change.
 
 ## Transition
 
-“Those interventions define both the strength and the limit of our result. I’ll now summarize what we can claim and what must come next.”
+“Those experiments define both the strength and the limit of our result. I’ll now summarize what we can claim and what must come next.”

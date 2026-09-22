@@ -4,26 +4,26 @@ Target: 1 minute 30 seconds
 
 ## Full script
 
-“To summarize, there are three main points.
+“To summarize, let’s go back to our two questions.
 
-First, we built a strong and reproducible four-class classifier. We used a fixed split, saved the model artifacts, and checked performance for each class.
+On performance: transfer learning clearly helps. A small network trained from scratch reached 0.827 macro F1, a frozen EfficientNet 0.907, and after fine-tuning 0.936—on par with published results on this dataset.
 
-Second, the main limitation is the dataset itself. The disease labels are closely linked to the image sources. So the final score reflects both useful lung information and dataset-specific shortcuts.
+On attribution: a large share of that performance does not come from the lungs. Every model does better on the background than on the lungs, and even a 16-by-16 thumbnail with the lungs removed reaches 0.787.
 
-Third, the most important next step is external validation with sources kept separate. Only after that would it make sense to focus on methods like domain harmonization, better lung constraints, probability calibration, or clinical evaluation. These are future steps, not completed results.
+So the next step is clear: test on images from hospitals that are not in this dataset. Our results make a concrete prediction—COVID recall should drop the most. Beyond that, we’d train a model to predict the source directly, penalise source information during training, and, above all, build datasets where each hospital contributes more than one class. These are future steps, not completed results.
 
-So our main takeaway is simple: a good performance score is an engineering result. Trusting the model is a separate scientific question.”
+Our main takeaway: high accuracy on this dataset does not, by itself, show that a model recognises disease. Where the performance comes from has to be part of the evaluation.”
 
 ## Point at
 
-- “What worked.”
-- “Main limitation.”
-- The first future-work item: source-separated external validation.
-- “Future work—not completed claims.”
+- The Performance card.
+- The Attribution card.
+- The first future-work item: external validation.
+- The final takeaway.
 
 ## 30-second version
 
-“We built a strong and reproducible classifier, but the labels are closely connected to the data sources. The next step must be external validation with separated sources. Everything beyond that—better constraints, calibration, and clinical testing—is still future work.”
+“Our best model reached 0.936 macro F1, on par with published work. But every model did better on the background than on the lungs, so much of that score comes from dataset shortcuts. The key next step is testing on new hospitals—and the key lesson is that where performance comes from must be part of its evaluation.”
 
 ## Handoff to Mert
 

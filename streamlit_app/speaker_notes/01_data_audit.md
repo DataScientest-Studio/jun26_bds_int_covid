@@ -4,38 +4,46 @@ Target: 3 minutes
 
 ## Before speaking
 
-Keep **Distribution & sources** open. During the section, open **Three audit findings**, then show only its RGB and Duplicates charts. Mention intensity from the mapping table without opening that chart. Do not narrate the mask chart unless asked or time allows.
+Start on the four example X-rays with their masks. Keep **Distribution & sources** open for most of the section—the source table is the heart of it. Then open **Audit findings** and show only the RGB and Duplicates charts. Mention intensity from the table without opening that chart.
 
 ## Full script
 
-“Here we have one example from each of the four classes. In total, the dataset contains 21,165 images.
+“Here is one example from each of the four classes, and under each one, its lung mask. The masks come with the dataset. They were produced by a segmentation model, so we treat them as a tool rather than perfect ground truth. Later we use them to show a model only the lungs—or everything except the lungs.
 
-The first thing we noticed was the class imbalance. Almost half of the images are Normal, while Viral Pneumonia makes up only around 6%. So later, we don’t rely on accuracy alone. We also look at macro F1 and recall for each class.
+The dataset has 21,165 images, and 21,106 after removing duplicates. It is also imbalanced: almost half the images are Normal, and Viral Pneumonia is only about 6%. So we don’t rely on accuracy alone—we report macro F1 and recall for each class.
 
-But the bigger issue is where the images came from. Lung Opacity comes from one source, Viral Pneumonia comes from another, and the other two classes use a mix of sources. This means the disease label and the data source are connected.
+But the biggest issue is where the images came from. Look at this table. Every COVID image comes from six repositories that contribute nothing else—no Normal, no Lung Opacity, no Viral Pneumonia. Lung Opacity comes only from RSNA. And Viral Pneumonia comes only from a Kaggle collection of children’s X-rays.
 
-Why does that matter? The model might learn things like borders, scanner style, compression, or preprocessing—instead of learning only from the lungs.
+Here is how strong that link is. If you ignore the image completely and only know which repository it came from, you already identify every single COVID case—and you get 65% accuracy overall, without looking at a single pixel.
 
-We found three practical problems and made one decision for each of them.
+So if the source leaves any visible trace in the image—a border, a scanner style, compression, even the patient’s age—the model can use that trace instead of the lungs.
 
-First, all 140 RGB images were in the Viral Pneumonia class, so we converted every image to grayscale.
+From the audit we drew four findings, each with an action.
 
-Second, we found 59 duplicate or redundant files, mostly in the COVID class. We removed those before splitting the data.
+The first is this source–label link. It motivates the experiments we show later.
 
-Third, brightness and contrast were different across the classes. That gave us another reason to test lung-focused versions of the images later.
+Second, all 140 RGB images were Viral Pneumonia, so we converted every image to grayscale.
 
-We also checked the lung masks. Their size and shape vary by class, so even a mask can carry information about the data source. That’s why we treat masking as an experiment, not as an automatic solution to bias.”
+Third, 59 files were duplicates, mostly COVID. We removed them before splitting the data.
+
+And fourth, brightness and contrast differ between classes—one more reason to test lung-restricted inputs.”
 
 ## Point at
 
-- One X-ray from each class.
+- Each X-ray and the mask beneath it.
 - The largest and smallest class bars.
-- The “RSNA only” and “Kaggle only” rows.
-- Each row of the finding → action table. Explain only the class-distribution, RGB, and duplicate charts; leave intensity and mask geometry as supporting visuals.
+- “Exclusive — no other class” in the COVID row of the source table.
+- The two source-only metrics: COVID F1 1.00 and 65.3% accuracy.
+- Each row of the finding → action table; open only the RGB and Duplicates charts.
 
 ## 30-second version
 
-“The dataset is imbalanced, and the classes are connected to different data sources. We converted all images to grayscale, removed 59 duplicates before the split, and used the brightness differences as a reason to test lung-focused inputs. We also found that the masks are not automatically free from source bias.”
+“The dataset is imbalanced, but the bigger problem is its sources: every COVID image comes from repositories that contain nothing else, so the source alone identifies every COVID case. We converted all images to grayscale, removed 59 duplicates before splitting, and designed experiments to test what the model really uses.”
+
+## If asked
+
+- **Where do the source numbers come from?** From the metadata distributed with the dataset, which records the URL of each image’s original collection.
+- **Why ‘children’s X-rays’?** The Kaggle collection comes from a paediatric hospital. Part of the Normal class comes from the same collection.
 
 ## Handoff to Mert
 
