@@ -2,23 +2,21 @@
 
 Target: 3 minutes
 
-## Before speaking
-
 Start on the four example X-rays with their masks. Keep **Distribution & sources** open for most of the section—the source table is the heart of it. Then open **Audit findings** and show only the RGB and Duplicates charts. Mention intensity from the table without opening that chart.
 
 ## Full script
 
-“Here is one example from each of the four classes, and under each one, its lung mask. The masks come with the dataset. They were produced by a segmentation model, so we treat them as a tool rather than perfect ground truth. Later we use them to show a model only the lungs—or everything except the lungs.
+“Here is one example from each of the four classes, and under each one, its lung mask. The masks come with the dataset. They were produced by a segmentation model, sothey may have errors in them. Later we use the masks in our experiments like to show a model only the lungs—or everything except the lungs.
 
-The dataset has 21,165 images, and 21,106 after removing duplicates. It is also imbalanced: almost half the images are Normal, and Viral Pneumonia is only about 6%. So we don’t rely on accuracy alone—we report macro F1 and recall for each class.
+The dataset has 21,165 images. It is an imbalanced dataset: almost half the images are Normal, and Viral Pneumonia is only about 6%. So we don’t rely on accuracy alone—we report macro F1 and recall for each class.
 
-But the biggest issue is where the images came from. Look at this table. Every COVID image comes from six repositories that contribute nothing else—no Normal, no Lung Opacity, no Viral Pneumonia. Lung Opacity comes only from RSNA. And Viral Pneumonia comes only from a Kaggle collection of children’s X-rays.
+The biggest issue is where the images came from. Look at this table. Every COVID image comes from six repositories that contribute nothing else. Lung Opacity comes only from RSNA. And Viral Pneumonia comes only from a Kaggle collection of children’s X-rays.
 
-Here is how strong that link is. If you ignore the image completely and only know which repository it came from, you already identify every single COVID case—and you get 65% accuracy overall, without looking at a single pixel.
+If you ignore the image completely and only know which repository it came from, you already identify every single COVID case—and you get 65% accuracy overall, without looking at a single pixel.
 
-So if the source leaves any visible trace in the image—a border, a scanner style, compression, even the patient’s age—the model can use that trace instead of the lungs.
+So if the source leaves any visible trace in the image—a border, a scanner style, even the cues about the patient’s age—the model can use that trace instead of the lungs.
 
-From the audit we drew four findings, each with an action.
+From the audit we drew four findings.
 
 The first is this source–label link. It motivates the experiments we show later.
 
@@ -26,15 +24,7 @@ Second, all 140 RGB images were Viral Pneumonia, so we converted every image to 
 
 Third, 59 files were duplicates, mostly COVID. We removed them before splitting the data.
 
-And fourth, brightness and contrast differ between classes—one more reason to test lung-restricted inputs.”
-
-## Point at
-
-- Each X-ray and the mask beneath it.
-- The largest and smallest class bars.
-- “Exclusive — no other class” in the COVID row of the source table.
-- The two source-only metrics: COVID F1 1.00 and 65.3% accuracy.
-- Each row of the finding → action table; open only the RGB and Duplicates charts.
+And fourth, brightness and contrast differ between classes.”
 
 ## 30-second version
 
@@ -47,4 +37,4 @@ And fourth, brightness and contrast differ between classes—one more reason to 
 
 ## Handoff to Mert
 
-“These findings directly shaped our preprocessing pipeline. Mert will now show how we turned those audit decisions into a reproducible pipeline.”
+“These findings shaped our preprocessing pipeline. Mert will now show how we turned those audit decisions into a reproducible pipeline.”
