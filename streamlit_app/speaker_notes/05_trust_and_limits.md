@@ -1,4 +1,4 @@
-# Trust and limitations — Mert
+# Trust and limitations — Berfin
 
 Target: 4 minutes
 
@@ -39,6 +39,6 @@ And one final distinction: the 92.4% model on the previous page is our best raw-
 
 “Grad-CAM suggested that the model was looking outside the lungs, so we tested several restricted versions of the input. In the cleanest comparison, removing the background reduced COVID recall from 90.3% to 57%. That is strong evidence of shortcut learning, but it does not mean the model uses only the background.”
 
-## Handoff to Berfin
+## Transition
 
-“Those interventions define both the strength and the limit of our result. Berfin will now summarize what we can claim and what must come next.”
+“Those interventions define both the strength and the limit of our result. I’ll now summarize what we can claim and what must come next.”

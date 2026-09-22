@@ -1,4 +1,4 @@
-# Preprocessing — Berfin
+# Preprocessing — Mert
 
 Target: 1 minute 30 seconds
 
@@ -23,6 +23,6 @@ For augmentation, we kept small rotations. We also tested horizontal flips, but 
 
 “We removed duplicates before making a fixed, stratified split. Then we converted the images to grayscale, resized the images and masks safely, and kept the lung-focused inputs as separate experiments. This gave us a consistent pipeline for every model comparison.”
 
-## Handoff to Mert
+## Transition
 
-“The audit told us what to standardize and what to test. Mert will now show the experiment sequence we used to separate raw performance from trustworthy evidence.”
+“The pipeline is consistent across every model comparison. Next I’ll show the experiment sequence we used to separate raw performance from trustworthy evidence.”

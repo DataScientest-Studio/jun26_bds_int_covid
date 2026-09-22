@@ -6,10 +6,10 @@
 | --- | --- | ---: | --- | --- |
 | Home | Berfin | 0:45 | Performance and trust are separate questions | Central research question and four badges |
 | Data audit | Berfin | 3:00 | Four classes, source entanglement, three finding→action decisions | Four X-rays, source table, RGB and duplicate charts |
-| Preprocessing | Berfin | 1:30 | The audit decisions became a reproducible pipeline | Pipeline badges and paired-transform figure |
+| Preprocessing | Mert | 1:30 | The audit decisions became a reproducible pipeline | Pipeline badges and paired-transform figure |
 | Modelling | Mert | 2:15 | Eight experiments had distinct purposes | Experiment map; fine-tuned and lungs-only rows |
 | Results | Mert | 2:15 | Fine-tuned EfficientNetB0 is the retained raw-score winner | Three metrics, winner confusion matrix, transition box |
-| Trust & limits | Mert | 4:00 | Multiple constraints were tried; matched masking exposed a COVID-specific shortcut | Reasoning chain and 90.3% → 57.0% metrics |
+| Trust & limits | Berfin | 4:00 | Multiple constraints were tried; matched masking exposed a COVID-specific shortcut | Reasoning chain and 90.3% → 57.0% metrics |
 | Conclusion | Berfin | 1:30 | Strong classifier, source-confounded evidence, careful future work | Three conclusion cards and future-work list |
 | Live demo | Mert | 2:30 | One cached model, four probabilities, honest Grad-CAM caveat | Prediction, probability bars, heatmap |
 
@@ -17,8 +17,8 @@ Target total: 17 minutes 45 seconds, leaving about 2 minutes for interruption or
 
 ## Exact handoffs
 
-- Berfin → Mert, after Preprocessing: “The audit told us what to standardize and what to test. Mert will now show the experiment sequence we used to separate raw performance from trustworthy evidence.”
-- Mert → Berfin, after Trust & limits: “Those interventions define both the strength and the limit of our result. Berfin will now summarize what we can claim and what must come next.”
+- Berfin → Mert, after Data audit: “These findings directly shaped our preprocessing pipeline. Mert will now show how we turned those audit decisions into a reproducible pipeline.”
+- Mert → Berfin, after Results: “So the next question is the most important one: did the model get the right answers for the right reasons? Berfin will now walk through how we tested that.”
 - Berfin → Mert, after Conclusion: “With that boundary clear, Mert will finish with one live prediction using the same saved fine-tuned model.”
 - Mert → jury, after Live demo: “The pipeline works, but this output remains a research prototype—not a diagnosis. We are ready for your questions.”
 

@@ -23,6 +23,6 @@ So, on this internal test set, the result is strong. But these numbers only tell
 
 “The fine-tuned EfficientNetB0 was our best model, with 92.4% accuracy and 93.6% macro F1. The scores are strong across the classes, but they still don’t tell us what the model learned or whether it would work on data from a new source.”
 
-## Transition
+## Handoff to Berfin
 
-“So the next question is the most important one: did the model get the right answers for the right reasons?”
+“So the next question is the most important one: did the model get the right answers for the right reasons? Berfin will now walk through how we tested that.”

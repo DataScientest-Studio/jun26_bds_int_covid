@@ -37,6 +37,6 @@ We also checked the lung masks. Their size and shape vary by class, so even a ma
 
 “The dataset is imbalanced, and the classes are connected to different data sources. We converted all images to grayscale, removed 59 duplicates before the split, and used the brightness differences as a reason to test lung-focused inputs. We also found that the masks are not automatically free from source bias.”
 
-## Transition
+## Handoff to Mert
 
-“These findings directly shaped our preprocessing pipeline, which is what I’ll show next.”
+“These findings directly shaped our preprocessing pipeline. Mert will now show how we turned those audit decisions into a reproducible pipeline.”
