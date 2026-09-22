@@ -61,7 +61,7 @@ with tab2:
         st.write(
             "Applying different random transforms to an image and its mask would move the lung boundary away from the anatomy. The pipeline samples one transform and reuses it for both."
         )
-        st.metric("Preferred augmentation", "Rotation only", border=True)
+        st.metric("Preferred augmentation", "Rotation and zoom", border=True)
         st.caption("Horizontal flipping was tested, then removed after validation performance declined.")
 
 footer("Preprocessing")
