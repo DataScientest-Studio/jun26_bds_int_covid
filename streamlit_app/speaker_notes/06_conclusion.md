@@ -27,4 +27,4 @@ Our main takeaway: high accuracy on this dataset does not, by itself, show that 
 
 ## Handoff to Mert
 
-“With that boundary clear, Mert will finish with one live prediction using the same saved fine-tuned model.”
+“With that boundary clear, Mert will finish with one live prediction using our best fine-tuned model.”
