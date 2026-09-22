@@ -28,6 +28,72 @@ prepared_examples = {
     "Viral Pneumonia": example_image("Viral Pneumonia", "Viral Pneumonia-1003.png"),
 }
 
+DEFAULT_EXAMPLE = "Lung Opacity · outside-lung attention example"
+MAX_GRID_COLS = 2
+
+SelectedItem = tuple[str, Image.Image, str]
+
+
+def chunked(items: list, size: int) -> list[list]:
+    return [items[index : index + size] for index in range(0, len(items), size)]
+
+
+def load_prepared_items(names: list[str]) -> list[SelectedItem]:
+    loaded: list[SelectedItem] = []
+    for name in names:
+        example_path = prepared_examples[name]
+        if example_path.exists():
+            loaded.append(
+                (name, Image.open(example_path).convert("L"), example_path.name)
+            )
+        else:
+            st.warning(f"Example image not found: {example_path.name}")
+    return loaded
+
+
+def render_image_grid(items: list[SelectedItem]) -> None:
+    if not items:
+        return
+    st.subheader("Selected X-rays")
+    for row in chunked(items, MAX_GRID_COLS):
+        columns = st.columns(len(row), gap="medium")
+        for column, (label, image, filename) in zip(columns, row):
+            with column:
+                st.image(image, caption=f"{label} · {filename}")
+
+
+def render_result_card(label: str, filename: str, result: dict) -> None:
+    with st.container(border=True):
+        st.markdown(f"**{label}** · `{filename}`")
+        st.success(
+            f"Prediction: {result['label']} · confidence {result['confidence']:.1%}",
+            icon=":material/check_circle:",
+        )
+        probabilities, explanation = st.columns([1, 1.05], gap="medium")
+        with probabilities:
+            st.bar_chart(
+                result["probabilities"],
+                x="Class",
+                y="Probability",
+                y_label="Model probability",
+                horizontal=True,
+            )
+        with explanation:
+            st.image(
+                result["overlay"],
+                caption="Grad-CAM: warmer colors had more influence.",
+            )
+
+
+def render_result_grid(items: list[SelectedItem], results: list[dict]) -> None:
+    st.subheader("Predictions")
+    for row in chunked(list(zip(items, results)), MAX_GRID_COLS):
+        columns = st.columns(len(row), gap="medium")
+        for column, ((label, _, filename), result) in zip(columns, row):
+            with column:
+                render_result_card(label, filename, result)
+
+
 with st.container(horizontal=True):
     st.badge(PRIMARY_MODEL_NAME, icon=":material/model_training:", color="blue")
     st.badge("Preloads on page open", icon=":material/bolt:", color="green")
@@ -41,93 +107,96 @@ source = st.segmented_control(
     width="stretch",
 )
 
-selected_image: Image.Image | None = None
-selected_name = ""
+selected_items: list[SelectedItem] = []
 
-left, right = st.columns([1, 1.25], gap="large")
-with left:
-    if source == "Prepared examples":
-        example_name = st.selectbox("Prepared class example", list(prepared_examples))
-        example_path = prepared_examples[example_name]
-        if example_path.exists():
-            selected_image = Image.open(example_path).convert("L")
-            selected_name = example_path.name
-            st.image(selected_image, caption=f"{example_name} · {selected_name}")
-        else:
-            st.warning(f"Example image not found: {example_path.name}")
-        if "outside-lung" in example_name:
+if source == "Prepared examples":
+    chosen = st.pills(
+        "Prepared class examples",
+        list(prepared_examples),
+        default=[DEFAULT_EXAMPLE],
+        selection_mode="multi",
+    )
+    if chosen:
+        selected_items = load_prepared_items(list(chosen))
+        if any("outside-lung" in name for name in chosen):
             st.warning(
-                "This known example is useful for showing that Grad-CAM can concentrate away from the lungs.",
+                "The Lung Opacity example is useful for showing that Grad-CAM can concentrate away from the lungs.",
                 icon=":material/visibility:",
             )
-    elif source == "Upload an X-ray":
-        uploaded_file = st.file_uploader(
-            "Upload one frontal chest X-ray",
-            type=["png", "jpg", "jpeg"],
-            max_upload_size=20,
-            help="PNG or JPEG, up to 20 MB. The image is converted to grayscale and resized for the model.",
-        )
-        if uploaded_file is not None:
-            try:
-                selected_image = read_uploaded_image(uploaded_file.getvalue())
-                selected_name = uploaded_file.name
-                st.image(selected_image, caption=selected_name)
-            except ValueError as error:
-                st.error(str(error), icon=":material/error:")
-        else:
-            st.caption("Choose one image; prepared examples remain available if upload fails.")
     else:
-        fallback_path = APP_ASSETS_DIR / "live_demo_fallback.png"
-        if fallback_path.exists():
-            st.image(str(fallback_path), caption="Successful-result screenshot saved before the defense.")
-        else:
-            st.warning(
-                "Fallback screenshot has not been generated yet.",
-                icon=":material/image_not_supported:",
-            )
-
-with right:
-    if source == "Offline fallback":
-        with st.container(border=True):
-            st.subheader("Fallback narration")
-            st.write(
-                "Use this screenshot if the live runtime fails. Point to the predicted class, all four probabilities, and the Grad-CAM overlay; then repeat that confidence is not clinical certainty."
-            )
-    elif selected_image is None:
-        with st.container(border=True):
-            st.subheader("Ready for one image")
-            st.write("Select a prepared example or upload a frontal chest X-ray.")
-    elif st.button("Run prediction", type="primary", icon=":material/play_arrow:"):
-        with st.container(border=True):
+        st.caption("Select one or more prepared examples to preview them together.")
+elif source == "Upload an X-ray":
+    uploaded_files = st.file_uploader(
+        "Upload frontal chest X-rays",
+        type=["png", "jpg", "jpeg"],
+        accept_multiple_files=True,
+        max_upload_size=20,
+        help="PNG or JPEG, up to 20 MB each. Images are converted to grayscale and resized for the model.",
+    )
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
             try:
-                with st.spinner(f"Running {PRIMARY_MODEL_NAME}..."):
-                    result = predict_with_explanation(selected_image)
-                st.success(
-                    f"Prediction: {result['label']} · confidence {result['confidence']:.1%}",
-                    icon=":material/check_circle:",
-                )
-                probabilities, explanation = st.columns([1, 1.05], gap="medium")
-                with probabilities:
-                    st.bar_chart(
-                        result["probabilities"],
-                        x="Class",
-                        y="Probability",
-                        y_label="Model probability",
-                        horizontal=True,
+                selected_items.append(
+                    (
+                        uploaded_file.name,
+                        read_uploaded_image(uploaded_file.getvalue()),
+                        uploaded_file.name,
                     )
-                with explanation:
-                    st.image(
-                        result["overlay"],
-                        caption="Grad-CAM: warmer colors had more influence.",
-                    )
-                st.warning(
-                    "Probabilities are model outputs, not disease probabilities. Grad-CAM is not lesion segmentation and may highlight non-lung regions.",
-                    icon=":material/health_and_safety:",
                 )
-            except Exception as error:
-                st.error(f"Prediction could not be completed: {error}", icon=":material/error:")
+            except ValueError as error:
+                st.error(f"{uploaded_file.name}: {error}", icon=":material/error:")
+    else:
+        st.caption("Choose one or more images; prepared examples remain available if upload fails.")
+else:
+    fallback_path = APP_ASSETS_DIR / "live_demo_fallback.png"
+    if fallback_path.exists():
+        st.image(str(fallback_path), caption="Successful-result screenshot saved before the defense.")
+    else:
+        st.warning(
+            "Fallback screenshot has not been generated yet.",
+            icon=":material/image_not_supported:",
+        )
 
-# Visiting the page warms the cached resource before the presenter clicks Run.
+if source != "Offline fallback":
+    render_image_grid(selected_items)
+
+    if not selected_items:
+        with st.container(border=True):
+            st.subheader("Ready for images")
+            st.write("Select one or more prepared examples or upload frontal chest X-rays.")
+    else:
+        image_count = len(selected_items)
+        run_label = (
+            "Run prediction"
+            if image_count == 1
+            else f"Run predictions on {image_count} images"
+        )
+        if st.button(run_label, type="primary", icon=":material/play_arrow:"):
+            with st.spinner(f"Running {PRIMARY_MODEL_NAME}..."):
+                successful_items: list[SelectedItem] = []
+                results: list[dict] = []
+                for label, image, filename in selected_items:
+                    try:
+                        results.append(predict_with_explanation(image))
+                        successful_items.append((label, image, filename))
+                    except Exception as error:
+                        st.error(
+                            f"{label} · {filename}: {error}",
+                            icon=":material/error:",
+                        )
+                if results:
+                    render_result_grid(successful_items, results)
+                    st.warning(
+                        "Probabilities are model outputs, not disease probabilities. Grad-CAM is not lesion segmentation and may highlight non-lung regions.",
+                        icon=":material/health_and_safety:",
+                    )
+else:
+    with st.container(border=True):
+        st.subheader("Fallback narration")
+        st.write(
+            "Use this screenshot if the live runtime fails. Point to the predicted class, all four probabilities, and the Grad-CAM overlay; then repeat that confidence is not clinical certainty."
+        )
+
 try:
     preload_primary_model()
 except Exception as error:
