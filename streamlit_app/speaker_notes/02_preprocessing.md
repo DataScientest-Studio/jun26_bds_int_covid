@@ -4,15 +4,13 @@ Target: 1 minute 30 seconds
 
 ## Full script
 
-“This is the full preprocessing pipeline.
+“We started by removing the 59 redundant files, which left us with 21,106 images. Then we created a fixed 70-15-15 split for training, validation, and testing. We used a stratified split at first, so each part keeps a similar class balance. Later on we handled the class imbalance by oversampling minority classes on the training split only, using rotationed and zoomed augmented copies.
 
-We started by removing the 59 redundant files, which left us with 21,106 images. Then we created a fixed 70-15-15 split for training, validation, and testing. We used a stratified split, so each part keeps a similar class balance.
-
-After that, every image was converted to grayscale and resized. We resized the masks with nearest-neighbor interpolation, so the mask boundaries stayed clean.
+After that, every image was converted to grayscale and resized. We resized the masks with nearest-neighbor interpolation.
 
 The full image is our main input. The lung crop, lungs-only, and background-only versions are separate experiments, so we can compare them fairly.
 
-For augmentation, we kept small rotations. We also tested horizontal flips, but removed them because validation performance became worse. And whenever we rotate an image, we apply exactly the same rotation to its mask, so they stay aligned.”
+For augmentation, we kept rotation and zoom. We also tested horizontal flips, but removed them because validation performance became worse. And whenever we rotate an image, we apply exactly the same rotation to its mask, so they stay aligned.”
 
 ## Point at
 

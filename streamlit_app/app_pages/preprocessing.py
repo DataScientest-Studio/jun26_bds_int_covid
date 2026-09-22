@@ -42,7 +42,7 @@ with tab1:
         st.markdown(
             "- **Always:** duplicate removal, grayscale conversion, resizing, deterministic split.\n"
             "- **Compared experimentally:** full image, lung ROI, lungs-only mask, and background-only regions.\n"
-            "- **Augmentation:** small rotations; horizontal flipping was removed after it reduced performance.\n"
+            "- **Augmentation:** random rotations and zooms; horizontal flipping was removed after it reduced performance.\n"
             "- **Reproducibility:** seed 42, saved manifests, versioned metrics, and tests."
         )
         st.info(
