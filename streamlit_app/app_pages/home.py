@@ -6,34 +6,36 @@ from lib.ui import disclaimer, footer
 
 st.caption("DATA SCIENCE BOOTCAMP · FINAL PROJECT")
 st.title("COVID-19 chest X-ray classification")
-st.markdown("### Four-class classification of lung X-ray images")
+st.markdown("### Four-class classification of chest radiographs")
 st.write(
-    "We study chest X-rays from the COVID-19 Radiography Database and ask whether a "
-    "high-performing image classifier learns from lung tissue or from dataset-specific shortcuts."
+    "We classify chest X-rays from the COVID-19 Radiography Database and ask what a "
+    "high-performing classifier actually uses: the lungs, or characteristics of the "
+    "repositories the images were collected from."
 )
 
 with st.container(horizontal=True, gap="small"):
-    st.badge("21,165 chest X-rays", icon=":material/radiology:", color="blue")
-    st.badge("4 lung-image classes", icon=":material/category:", color="violet")
-    st.badge("92.4% raw-score winner", icon=":material/analytics:", color="green")
+    st.badge("21,106 X-rays after deduplication", icon=":material/radiology:", color="blue")
+    st.badge("4 diagnostic classes", icon=":material/category:", color="violet")
+    st.badge("Best model: 0.936 macro F1", icon=":material/analytics:", color="green")
     st.badge("Shortcut learning identified", icon=":material/warning:", color="orange")
 
 st.space("medium")
 
 with st.container(border=True):
-    st.subheader("Project goal")
-    st.write(
-        "Train and evaluate models that separate COVID, Lung Opacity, Normal, and Viral "
-        "Pneumonia chest X-rays, then test whether strong internal accuracy reflects "
-        "medically relevant lung evidence."
+    st.subheader("Two research questions")
+    st.markdown(
+        "**1. Performance.** How accurately can convolutional networks classify "
+        "COVID-19, Lung Opacity, Normal, and Viral Pneumonia — and how much does "
+        "transfer learning improve on a network trained from scratch?"
     )
     st.markdown(
-        "**Research question:** Can a high-performing classifier be trusted to learn from "
-        "the lungs—or from how the dataset was assembled?"
+        "**2. Attribution.** Which parts of the image do these models rely on, and "
+        "how much of their accuracy comes from the lungs rather than from the source "
+        "repositories?"
     )
 
 with st.container(horizontal=True, gap="large"):
-    st.markdown("**Authors:** Berfin & Mert")
+    st.markdown("**Authors:** Berfin Aktaş & Mert Doğruca")
     st.markdown("**Project mentor:** Paul Grolier")
     st.markdown("**Format:** 20-minute walkthrough + live prediction")
 

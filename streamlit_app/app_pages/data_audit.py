@@ -1,8 +1,27 @@
+from pathlib import Path
+
 import pandas as pd
 import streamlit as st
 
 from lib.paths import FIGURES_DIR, example_image
 from lib.ui import figure, footer, narrative, page_intro
+
+
+def mask_for(image_path: Path) -> Path | None:
+    """Locate the lung mask that belongs to an example image.
+
+    Checks a ``masks/`` folder next to the example first (the bundled-assets
+    layout), then the raw dataset layout ``<class>/masks/``, and returns None if
+    neither exists so a missing file never breaks the page.
+    """
+    image_path = Path(image_path)
+    for candidate in (
+        image_path.parent / "masks" / image_path.name,
+        image_path.parent.parent / "masks" / image_path.name,
+    ):
+        if candidate.exists():
+            return candidate
+    return None
 
 
 page_intro(
@@ -17,7 +36,7 @@ narrative(
     "Class and source are entangled, so a strong internal test score can still rely on shortcuts.",
 )
 
-st.markdown("#### One representative X-ray per class")
+st.markdown("#### One representative X-ray per class, with its lung mask")
 examples = [
     ("COVID", example_image("COVID", "COVID-1.png")),
     ("Lung Opacity", example_image("Lung_Opacity", "Lung_Opacity-1.png")),
@@ -27,10 +46,19 @@ examples = [
 for column, (label, path) in zip(st.columns(4, gap="small"), examples):
     with column.container(border=True, height="stretch"):
         figure(path, label)
+        mask_path = mask_for(path)
+        if mask_path is not None:
+            figure(mask_path, "Lung mask")
+        else:
+            st.caption("Mask not available")
 
-overview, evidence, geometry = st.tabs(
-    ["Distribution & sources", "Three audit findings", "Supporting mask evidence"]
+st.caption(
+    "Every image comes with a lung mask (256 × 256). The masks were produced by a "
+    "segmentation model, so they are a useful tool rather than a neutral ground truth. "
+    "Later experiments use them to restrict a model to the lungs, or to everything except the lungs."
 )
+
+overview, evidence = st.tabs(["Distribution & sources", "Audit findings"])
 
 with overview:
     left, right = st.columns([1.05, 1], gap="large", vertical_alignment="center")
@@ -39,31 +67,37 @@ with overview:
             FIGURES_DIR / "class_distribution.png",
             "Normal is 48.2% of the raw collection; Viral Pneumonia is 6.4%.",
         )
+        with st.container(horizontal=True):
+            st.metric("Raw images", "21,165", border=True)
+            st.metric("After deduplication", "21,106", border=True)
+            st.metric("Image size", "299 × 299", border=True)
     with right:
         st.markdown("#### Source and label move together")
         source_frame = pd.DataFrame(
             [
-                ["COVID", "Multiple public repositories", "Mixed"],
-                ["Lung Opacity", "RSNA only", "Single source"],
-                ["Normal", "Mainly RSNA + Kaggle", "Mixed"],
-                ["Viral Pneumonia", "Kaggle only", "Single source"],
+                ["COVID", "Six public repositories", "3,616", "Exclusive — no other class"],
+                ["Lung Opacity", "RSNA", "6,012", "Shared with Normal"],
+                ["Normal", "RSNA (8,851) + Kaggle (1,341)", "10,192", "Shared"],
+                ["Viral Pneumonia", "Kaggle (paediatric)", "1,345", "Shared with Normal"],
             ],
-            columns=["Class", "Documented origin", "Source pattern"],
+            columns=["Class", "Source repositories", "Images", "Source overlap"],
         )
         st.dataframe(source_frame, hide_index=True)
+        with st.container(horizontal=True):
+            st.metric("COVID F1 from source alone", "1.00", border=True)
+            st.metric("Accuracy from source alone", "65.3%", border=True)
         st.warning(
-            "A source-specific border, scanner, or preprocessing signature can become a proxy for the diagnosis.",
+            "Knowing only which repository an image came from—without looking at a single "
+            "pixel—identifies every COVID case. Any source signature visible in the image "
+            "can therefore stand in for the diagnosis.",
             icon=":material/warning:",
         )
-        with st.container(horizontal=True):
-            st.metric("Raw images", "21,165", border=True)
-            st.metric("Image size", "299 × 299", border=True)
-            st.metric("Classes", "4", border=True)
 
 with evidence:
     st.markdown("#### Finding → action")
     actions = pd.DataFrame(
         [
+            ["Source–label link", "All COVID images come from COVID-only repositories", "Region and resolution ablations"],
             ["RGB encoding", "140 RGB files, all Viral Pneumonia", "Convert every image to grayscale"],
             ["Exact duplicates", "59 redundant files, concentrated in COVID", "Deduplicate before splitting"],
             ["Intensity differences", "Brightness and contrast vary by class", "Test lung-constrained variants"],
@@ -89,21 +123,9 @@ with evidence:
             "Whole-image brightness and contrast differ systematically across classes.",
         )
 
-with geometry:
-    left, right = st.columns([1.2, 1], gap="large", vertical_alignment="center")
-    with left:
-        figure(
-            FIGURES_DIR / "mean_lung_mask_area_ratio.png",
-            "Average mask coverage differs by class.",
-        )
-    with right:
-        st.markdown("#### Supporting evidence—not a separate claim")
-        st.write(
-            "The supplied masks are not automatically neutral: their area and shape can retain source or annotation conventions. We therefore used them as controlled experimental inputs, not as guaranteed bias removal."
-        )
-        st.info(
-            "Audit consequence: evaluate macro F1 and per-class recall, then test where predictive information comes from.",
-            icon=":material/arrow_forward:",
-        )
+st.info(
+    "Audit consequence: evaluate macro F1 and per-class recall, then test where predictive information comes from.",
+    icon=":material/arrow_forward:",
+)
 
 footer("Data audit")
